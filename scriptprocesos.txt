@@ -1,3 +1,1 @@
-prueba de compatibilidad
-
-prueba de abner
+//ingresar segun tabla asignada los procesos almacenados
