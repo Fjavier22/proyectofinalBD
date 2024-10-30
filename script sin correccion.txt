@@ -1,0 +1,490 @@
+/*
+ Navicat Premium Data Transfer
+
+ Source Server         : mysql local
+ Source Server Type    : MySQL
+ Source Server Version : 80033 (8.0.33)
+ Source Host           : localhost:3306
+ Source Schema         : academy
+
+ Target Server Type    : MySQL
+ Target Server Version : 80033 (8.0.33)
+ File Encoding         : 65001
+
+ Date: 29/10/2024 15:15:20
+*/
+
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- ----------------------------
+-- Table structure for audiences
+-- ----------------------------
+DROP TABLE IF EXISTS `audiences`;
+CREATE TABLE `audiences` (
+  `id_audience` int NOT NULL AUTO_INCREMENT,
+  `name_audience` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `course_id` int NOT NULL,
+  PRIMARY KEY (`id_audience`),
+  KEY `course_id` (`course_id`),
+  CONSTRAINT `audiences_ibfk_1` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id_course`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Records of audiences
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for categories
+-- ----------------------------
+DROP TABLE IF EXISTS `categories`;
+CREATE TABLE `categories` (
+  `id_category` int NOT NULL AUTO_INCREMENT,
+  `name_category` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  PRIMARY KEY (`id_category`),
+  CONSTRAINT `category_id` FOREIGN KEY (`id_category`) REFERENCES `courses` (`category_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Records of categories
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for comments
+-- ----------------------------
+DROP TABLE IF EXISTS `comments`;
+CREATE TABLE `comments` (
+  `id_comment` int NOT NULL AUTO_INCREMENT,
+  `name_comment` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `commentable_id` int DEFAULT NULL,
+  `commentable_type` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `user_id` int DEFAULT NULL,
+  PRIMARY KEY (`id_comment`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `comments_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id_user`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Records of comments
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for course_user
+-- ----------------------------
+DROP TABLE IF EXISTS `course_user`;
+CREATE TABLE `course_user` (
+  `user_id` int NOT NULL,
+  `course_id` int NOT NULL,
+  PRIMARY KEY (`user_id`,`course_id`),
+  KEY `course_id` (`course_id`),
+  CONSTRAINT `course_user_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id_user`),
+  CONSTRAINT `course_user_ibfk_2` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id_course`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Records of course_user
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for courses
+-- ----------------------------
+DROP TABLE IF EXISTS `courses`;
+CREATE TABLE `courses` (
+  `id_course` int NOT NULL AUTO_INCREMENT,
+  `title_course` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `subtitle_course` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `description_course` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `status_course` int DEFAULT NULL,
+  `user_id` int DEFAULT NULL,
+  `level_id` int DEFAULT NULL,
+  `category_id` int DEFAULT NULL,
+  `price_id` int DEFAULT NULL,
+  PRIMARY KEY (`id_course`),
+  KEY `level_id` (`level_id`),
+  KEY `user_id` (`user_id`),
+  KEY `category_id` (`category_id`),
+  KEY `price_id` (`price_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Records of courses
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for descriptions
+-- ----------------------------
+DROP TABLE IF EXISTS `descriptions`;
+CREATE TABLE `descriptions` (
+  `id_description` int NOT NULL AUTO_INCREMENT,
+  `name_description` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `lesson_id` int DEFAULT NULL,
+  PRIMARY KEY (`id_description`),
+  KEY `lkesson_id` (`lesson_id`),
+  CONSTRAINT `lkesson_id` FOREIGN KEY (`lesson_id`) REFERENCES `lessons` (`id_lesson`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Records of descriptions
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for goals
+-- ----------------------------
+DROP TABLE IF EXISTS `goals`;
+CREATE TABLE `goals` (
+  `id_goal` int NOT NULL AUTO_INCREMENT,
+  `name_goal` varchar(34) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `course_id` int NOT NULL,
+  PRIMARY KEY (`id_goal`),
+  KEY `course_id` (`course_id`),
+  CONSTRAINT `goals_ibfk_1` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id_course`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Records of goals
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for images
+-- ----------------------------
+DROP TABLE IF EXISTS `images`;
+CREATE TABLE `images` (
+  `id_image` int NOT NULL AUTO_INCREMENT,
+  `url_image` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `imageable_id` int DEFAULT NULL,
+  `imageable_type` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  PRIMARY KEY (`id_image`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Records of images
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for lesson_user
+-- ----------------------------
+DROP TABLE IF EXISTS `lesson_user`;
+CREATE TABLE `lesson_user` (
+  `user_id` int NOT NULL,
+  `lesson_id` int NOT NULL,
+  PRIMARY KEY (`user_id`,`lesson_id`),
+  KEY `lesson_id` (`lesson_id`),
+  CONSTRAINT `lesson_id` FOREIGN KEY (`lesson_id`) REFERENCES `lessons` (`id_lesson`),
+  CONSTRAINT `user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id_user`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Records of lesson_user
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for lessons
+-- ----------------------------
+DROP TABLE IF EXISTS `lessons`;
+CREATE TABLE `lessons` (
+  `id_lesson` int NOT NULL AUTO_INCREMENT,
+  `name_lesson` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `url_lesson` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `iframe_lesson` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `section_id` int DEFAULT NULL,
+  `platform_id` int DEFAULT NULL,
+  PRIMARY KEY (`id_lesson`),
+  KEY `platform_id` (`platform_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Records of lessons
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for levels
+-- ----------------------------
+DROP TABLE IF EXISTS `levels`;
+CREATE TABLE `levels` (
+  `id_level` int NOT NULL AUTO_INCREMENT,
+  `name_level` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  PRIMARY KEY (`id_level`),
+  CONSTRAINT `level_id` FOREIGN KEY (`id_level`) REFERENCES `courses` (`level_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Records of levels
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for likes
+-- ----------------------------
+DROP TABLE IF EXISTS `likes`;
+CREATE TABLE `likes` (
+  `id_like` int NOT NULL AUTO_INCREMENT,
+  `value` int DEFAULT NULL,
+  `likeable_id` int DEFAULT NULL,
+  `likeable_type` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `user_id` int DEFAULT NULL,
+  PRIMARY KEY (`id_like`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `likes_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id_user`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Records of likes
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for platforms
+-- ----------------------------
+DROP TABLE IF EXISTS `platforms`;
+CREATE TABLE `platforms` (
+  `id_platform` int NOT NULL AUTO_INCREMENT,
+  `name_platform` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  PRIMARY KEY (`id_platform`),
+  CONSTRAINT `id_lesson` FOREIGN KEY (`id_platform`) REFERENCES `lessons` (`platform_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Records of platforms
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for prices
+-- ----------------------------
+DROP TABLE IF EXISTS `prices`;
+CREATE TABLE `prices` (
+  `id_price` int NOT NULL AUTO_INCREMENT,
+  `amount_price` decimal(10,2) DEFAULT NULL,
+  PRIMARY KEY (`id_price`),
+  CONSTRAINT `price_id` FOREIGN KEY (`id_price`) REFERENCES `courses` (`price_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Records of prices
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for profiles
+-- ----------------------------
+DROP TABLE IF EXISTS `profiles`;
+CREATE TABLE `profiles` (
+  `id_profile` int NOT NULL AUTO_INCREMENT,
+  `title_profile` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `biography_profile` text COLLATE utf8mb4_general_ci,
+  `website_profile` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `facebook_profile` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `linkedin_profile` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `youtube_profile` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `user_id` int DEFAULT NULL,
+  PRIMARY KEY (`id_profile`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `profiles_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id_user`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Records of profiles
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for requirements
+-- ----------------------------
+DROP TABLE IF EXISTS `requirements`;
+CREATE TABLE `requirements` (
+  `id_requirement` int NOT NULL AUTO_INCREMENT,
+  `name_requirement` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `course_id` int NOT NULL,
+  PRIMARY KEY (`id_requirement`),
+  KEY `course_id` (`course_id`),
+  CONSTRAINT `requirements_ibfk_1` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id_course`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Records of requirements
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for resources
+-- ----------------------------
+DROP TABLE IF EXISTS `resources`;
+CREATE TABLE `resources` (
+  `id_resource` int NOT NULL AUTO_INCREMENT,
+  `url_resource` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `resourceable_id` int DEFAULT NULL,
+  `resourceable_type` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  PRIMARY KEY (`id_resource`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Records of resources
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for reviews
+-- ----------------------------
+DROP TABLE IF EXISTS `reviews`;
+CREATE TABLE `reviews` (
+  `id_review` int NOT NULL AUTO_INCREMENT,
+  `comment_review` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `rating_review` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `user_id` int DEFAULT NULL,
+  `course_id` int DEFAULT NULL,
+  PRIMARY KEY (`id_review`),
+  KEY `user_id` (`user_id`),
+  KEY `course_id` (`course_id`),
+  CONSTRAINT `reviews_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id_user`),
+  CONSTRAINT `reviews_ibfk_2` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id_course`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Records of reviews
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for sections
+-- ----------------------------
+DROP TABLE IF EXISTS `sections`;
+CREATE TABLE `sections` (
+  `id_section` int NOT NULL AUTO_INCREMENT,
+  `name_section` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `course_id` int NOT NULL,
+  PRIMARY KEY (`id_section`),
+  KEY `course_id` (`course_id`),
+  CONSTRAINT `sections_ibfk_1` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id_course`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Records of sections
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for users
+-- ----------------------------
+DROP TABLE IF EXISTS `users`;
+CREATE TABLE `users` (
+  `id_user` int NOT NULL AUTO_INCREMENT,
+  `name_user` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `email_user` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `password_user` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  PRIMARY KEY (`id_user`),
+  KEY `user_id` (`id_user`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Records of users
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Procedure structure for GetAllUsers
+-- ----------------------------
+DROP PROCEDURE IF EXISTS `GetAllUsers`;
+delimiter ;;
+CREATE PROCEDURE `GetAllUsers`()
+BEGIN
+    SELECT * FROM users;
+END
+;;
+delimiter ;
+
+-- ----------------------------
+-- Procedure structure for GetUserByName
+-- ----------------------------
+DROP PROCEDURE IF EXISTS `GetUserByName`;
+delimiter ;;
+CREATE PROCEDURE `GetUserByName`(IN name_user VARCHAR(45))
+BEGIN
+    SELECT * FROM users
+    WHERE name_user LIKE CONCAT('%', name_user, '%');
+END
+;;
+delimiter ;
+
+-- ----------------------------
+-- Procedure structure for InsertUser
+-- ----------------------------
+DROP PROCEDURE IF EXISTS `InsertUser`;
+delimiter ;;
+CREATE PROCEDURE `InsertUser`(IN name_user VARCHAR(45),
+    IN email_user VARCHAR(45),
+    IN password_user VARCHAR(45))
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION 
+    BEGIN
+        ROLLBACK;
+    END;
+
+    START TRANSACTION;
+    
+    INSERT INTO users (name_user, email_user, password_user)
+    VALUES (name_user, email_user, password_user);
+
+    COMMIT;
+END
+;;
+delimiter ;
+
+-- ----------------------------
+-- Procedure structure for UpdateUser
+-- ----------------------------
+DROP PROCEDURE IF EXISTS `UpdateUser`;
+delimiter ;;
+CREATE PROCEDURE `UpdateUser`(IN id_user INT,
+    IN name_user VARCHAR(45),
+    IN email_user VARCHAR(45),
+    IN password_user VARCHAR(45))
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION 
+    BEGIN
+        ROLLBACK;
+    END;
+
+    START TRANSACTION;
+
+    UPDATE users
+    SET name_user = name_user,
+        email_user = email_user,
+        password_user = password_user
+    WHERE id_user = id_user;
+
+    COMMIT;
+END
+;;
+delimiter ;
+
+SET FOREIGN_KEY_CHECKS = 1;
