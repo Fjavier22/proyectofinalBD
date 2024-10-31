@@ -1,3 +1,176 @@
-colocar aca su script segun tabla asginada, corregida y con procesos almecenados
+-- TABLE COURSES
+-- Drop `courses` table if it exists
+DROP TABLE IF EXISTS courses;
 
-create 
+-- Create `courses` table
+CREATE TABLE courses (
+  id_course INT NOT NULL AUTO_INCREMENT,
+  title_course VARCHAR(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  subtitle_course VARCHAR(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  description_course VARCHAR(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  status_course INT DEFAULT 1,  -- Logical deletion status (1 = Active, 0 = Inactive)
+  user_id INT DEFAULT NULL,
+  level_id INT DEFAULT NULL,
+  category_id INT DEFAULT NULL,
+  price_id INT DEFAULT NULL,
+  PRIMARY KEY (id_course),
+  KEY level_id (level_id),
+  KEY user_id (user_id),
+  KEY category_id (category_id),
+  KEY price_id (price_id),
+  CONSTRAINT fk_courses_user FOREIGN KEY (user_id) REFERENCES users (id_user),
+  CONSTRAINT fk_courses_level FOREIGN KEY (level_id) REFERENCES levels (id_level),
+  CONSTRAINT fk_courses_category FOREIGN KEY (category_id) REFERENCES categories (id_category),
+  CONSTRAINT fk_courses_price FOREIGN KEY (price_id) REFERENCES prices (id_price)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Course records
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+
+-- PROCEDURES FOR COURSES TABLE
+-- Procedure to insert a new course
+DELIMITER //
+CREATE PROCEDURE InsertCourse(
+    IN p_title_course VARCHAR(45),
+    IN p_subtitle_course VARCHAR(45),
+    IN p_description_course VARCHAR(45),
+    IN p_user_id INT,
+    IN p_level_id INT,
+    IN p_category_id INT,
+    IN p_price_id INT
+)
+BEGIN
+    INSERT INTO courses (title_course, subtitle_course, description_course, status_course, user_id, level_id, category_id, price_id)
+    VALUES (p_title_course, p_subtitle_course, p_description_course, 1, p_user_id, p_level_id, p_category_id, p_price_id);
+END //
+DELIMITER ;
+
+-- Procedure to update an existing course
+DELIMITER //
+CREATE PROCEDURE UpdateCourse(
+    IN p_id_course INT,
+    IN p_title_course VARCHAR(45),
+    IN p_subtitle_course VARCHAR(45),
+    IN p_description_course VARCHAR(45),
+    IN p_user_id INT,
+    IN p_level_id INT,
+    IN p_category_id INT,
+    IN p_price_id INT
+)
+BEGIN
+    UPDATE courses
+    SET title_course = p_title_course,
+        subtitle_course = p_subtitle_course,
+        description_course = p_description_course,
+        user_id = p_user_id,
+        level_id = p_level_id,
+        category_id = p_category_id,
+        price_id = p_price_id
+    WHERE id_course = p_id_course AND status_course = 1;
+END //
+DELIMITER ;
+
+-- Procedure to get all active courses
+DELIMITER //
+CREATE PROCEDURE GetAllCourses()
+BEGIN
+    SELECT id_course, title_course, subtitle_course, description_course
+    FROM courses
+    WHERE status_course = 1;
+END //
+DELIMITER ;
+
+-- Procedure to search courses by title
+DELIMITER //
+CREATE PROCEDURE GetCourseByTitle(IN p_title VARCHAR(45))
+BEGIN
+    SELECT id_course, title_course, subtitle_course, description_course
+    FROM courses
+    WHERE title_course LIKE CONCAT('%', p_title, '%') AND status_course = 1;
+END //
+DELIMITER ;
+
+-- Procedure for logical deletion of a course
+DELIMITER //
+CREATE PROCEDURE DeleteCourseByTitle(IN p_title VARCHAR(45))
+BEGIN
+    UPDATE courses
+    SET status_course = 0
+    WHERE title_course = p_title;
+END //
+DELIMITER ;
+
+
+
+
+-- TABLE GOALS
+-- Drop `goals` table if it exists
+DROP TABLE IF EXISTS goals;
+
+-- Create `goals` table
+CREATE TABLE goals (
+  id_goal INT NOT NULL AUTO_INCREMENT,
+  name_goal VARCHAR(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  course_id INT NOT NULL,
+  PRIMARY KEY (id_goal),
+  KEY course_id (course_id),
+  CONSTRAINT fk_goals_course FOREIGN KEY (course_id) REFERENCES courses (id_course)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Goal records
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+
+-- PROCEDURES FOR GOALS TABLE
+-- Procedure to insert a new goal
+DELIMITER //
+CREATE PROCEDURE InsertGoal(
+    IN p_name_goal VARCHAR(45),
+    IN p_course_id INT
+)
+BEGIN
+    INSERT INTO goals (name_goal, course_id)
+    VALUES (p_name_goal, p_course_id);
+END //
+DELIMITER ;
+
+-- Procedure to update a goal
+DELIMITER //
+CREATE PROCEDURE UpdateGoal(
+    IN p_id_goal INT,
+    IN p_name_goal VARCHAR(45),
+    IN p_course_id INT
+)
+BEGIN
+    UPDATE goals
+    SET name_goal = p_name_goal,
+        course_id = p_course_id
+    WHERE id_goal = p_id_goal;
+END //
+DELIMITER ;
+
+-- Procedure to get all goals for a specific course
+DELIMITER //
+CREATE PROCEDURE GetAllGoalsByCourse(IN p_course_id INT)
+BEGIN
+    SELECT id_goal, name_goal
+    FROM goals
+    WHERE course_id = p_course_id;
+END //
+DELIMITER ;
+
+-- Procedure to delete a goal
+DELIMITER //
+CREATE PROCEDURE DeleteGoal(IN p_id_goal INT)
+BEGIN
+    DELETE FROM goals
+    WHERE id_goal = p_id_goal;
+END //
+DELIMITER ;
