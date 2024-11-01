@@ -1,6 +1,4 @@
--- ----------------------------
--- Table structure for courses
--- ----------------------------
+-- TABLE COURSES
 DROP TABLE IF EXISTS `courses`;
 CREATE TABLE `courses` (
   `id_course` int NOT NULL AUTO_INCREMENT,
@@ -18,141 +16,94 @@ CREATE TABLE `courses` (
   KEY `category_id` (`category_id`),
   KEY `price_id` (`price_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- ----------------------------
--- Records of courses
--- ----------------------------
 BEGIN;
 COMMIT;
 
-
--- ----------------------------
--- Procedure structure for GetAllCourses
--- ----------------------------
-DROP PROCEDURE IF EXISTS `GetAllCourses`;
-delimiter ;;
-CREATE PROCEDURE `GetAllCourses`()
-BEGIN
-    SELECT * FROM courses;
-END
-;;
-delimiter ;
-
--- ----------------------------
--- Procedure structure for GetCourseByTitle
--- ----------------------------
-DROP PROCEDURE IF EXISTS `GetCourseByTitle`;
-delimiter ;;
-CREATE PROCEDURE `GetCourseByTitle`(IN title_course VARCHAR(45))
-BEGIN
-    SELECT * FROM courses
-    WHERE title_course LIKE CONCAT('%', title_course, '%');
-END
-;;
-delimiter ;
-
--- ----------------------------
--- Procedure structure for InsertCourse
--- ----------------------------
-DROP PROCEDURE IF EXISTS `InsertCourse`;
-delimiter ;;
-CREATE PROCEDURE `InsertCourse`(
-    IN title_course VARCHAR(45),
-    IN subtitle_course VARCHAR(45),
-    IN description_course VARCHAR(45),
-    IN status_course INT,
-    IN user_id INT,
-    IN level_id INT,
-    IN category_id INT,
-    IN price_id INT
+-- PROCEDURE COURSES
+-- PROCEDURE TABLE COURSES
+-- InsertCourse
+DELIMITER //
+DROP PROCEDURE IF EXISTS InsertCourse;
+CREATE PROCEDURE InsertCourse(
+    IN p_title_course VARCHAR(45),
+    IN p_subtitle_course VARCHAR(45),
+    IN p_description_course VARCHAR(45),
+    IN p_status_course INT,
+    IN p_user_id INT,
+    IN p_level_id INT,
+    IN p_category_id INT,
+    IN p_price_id INT
 )
 BEGIN
-    DECLARE EXIT HANDLER FOR SQLEXCEPTION 
-    BEGIN
-        ROLLBACK;
-    END;
-
-    START TRANSACTION;
-    
     INSERT INTO courses (title_course, subtitle_course, description_course, status_course, user_id, level_id, category_id, price_id)
-    VALUES (title_course, subtitle_course, description_course, status_course, user_id, level_id, category_id, price_id);
+    VALUES (p_title_course, p_subtitle_course, p_description_course, p_status_course, p_user_id, p_level_id, p_category_id, p_price_id);
+END //
+DELIMITER ;
 
-    COMMIT;
-END
-;;
-delimiter ;
-
--- ----------------------------
--- Procedure structure for UpdateCourse
--- ----------------------------
-DROP PROCEDURE IF EXISTS `UpdateCourse`;
-delimiter ;;
-CREATE PROCEDURE `UpdateCourse`(
-    IN id_course INT,
-    IN title_course VARCHAR(45),
-    IN subtitle_course VARCHAR(45),
-    IN description_course VARCHAR(45),
-    IN status_course INT,
-    IN user_id INT,
-    IN level_id INT,
-    IN category_id INT,
-    IN price_id INT
+-- UpdateCourseById
+DELIMITER //
+DROP PROCEDURE IF EXISTS UpdateCourseById;
+CREATE PROCEDURE UpdateCourseById(
+    IN p_id_course INT,
+    IN p_title_course VARCHAR(45),
+    IN p_subtitle_course VARCHAR(45),
+    IN p_description_course VARCHAR(45),
+    IN p_status_course INT,
+    IN p_user_id INT,
+    IN p_level_id INT,
+    IN p_category_id INT,
+    IN p_price_id INT
 )
 BEGIN
-    DECLARE EXIT HANDLER FOR SQLEXCEPTION 
-    BEGIN
-        ROLLBACK;
-    END;
-
-    START TRANSACTION;
-
     UPDATE courses
-    SET title_course = title_course,
-        subtitle_course = subtitle_course,
-        description_course = description_course,
-        status_course = status_course,
-        user_id = user_id,
-        level_id = level_id,
-        category_id = category_id,
-        price_id = price_id
-    WHERE id_course = id_course;
+    SET title_course = p_title_course,
+        subtitle_course = p_subtitle_course,
+        description_course = p_description_course,
+        status_course = p_status_course,
+        user_id = p_user_id,
+        level_id = p_level_id,
+        category_id = p_category_id,
+        price_id = p_price_id
+    WHERE id_course = p_id_course;
+END //
+DELIMITER ;
 
-    COMMIT;
-END
-;;
-delimiter ;
-
--- ----------------------------
--- Procedure structure for DeleteCourse (logical delete)
--- ----------------------------
-DROP PROCEDURE IF EXISTS `DeleteCourse`;
-delimiter ;;
-CREATE PROCEDURE `DeleteCourse`(
-    IN id_course INT
-)
+-- GetAllCourses
+DELIMITER //
+DROP PROCEDURE IF EXISTS GetAllCourses;
+CREATE PROCEDURE GetAllCourses()
 BEGIN
-    DECLARE EXIT HANDLER FOR SQLEXCEPTION 
-    BEGIN
-        ROLLBACK;
-    END;
+    SELECT id_course, title_course, subtitle_course, description_course, status_course, user_id, level_id, category_id, price_id
+    FROM courses;
+END //
+DELIMITER ;
 
-    START TRANSACTION;
+-- GetCourseById
+DELIMITER //
+DROP PROCEDURE IF EXISTS GetCourseById;
+CREATE PROCEDURE GetCourseById(IN p_id_course INT)
+BEGIN
+    SELECT id_course, title_course, subtitle_course, description_course, status_course, user_id, level_id, category_id, price_id
+    FROM courses
+    WHERE id_course = p_id_course;
+END //
+DELIMITER ;
 
+-- DeleteCourseById
+DELIMITER //
+DROP PROCEDURE IF EXISTS DeleteCourseById;
+CREATE PROCEDURE DeleteCourseById(IN p_id_course INT)
+BEGIN
     UPDATE courses
-    SET status_course = 0 -- Se asume que el valor `0` representa un estado de eliminación lógica
-    WHERE id_course = id_course;
-
-    COMMIT;
-END
-;;
-delimiter ;
+    SET status_course = 0  -- Considerando 0 como inactivo
+    WHERE id_course = p_id_course;
+END //
+DELIMITER ;
 
 
 
 
--- ----------------------------
--- Table structure for goals
--- ----------------------------
+-- TABLE GOALS
 DROP TABLE IF EXISTS `goals`;
 CREATE TABLE `goals` (
   `id_goal` int NOT NULL AUTO_INCREMENT,
@@ -162,113 +113,66 @@ CREATE TABLE `goals` (
   KEY `course_id` (`course_id`),
   CONSTRAINT `goals_ibfk_1` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id_course`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- ----------------------------
--- Records of goals
--- ----------------------------
 BEGIN;
 COMMIT;
 
-
--- ----------------------------
--- Procedure structure for GetAllGoals
--- ----------------------------
-DROP PROCEDURE IF EXISTS `GetAllGoals`;
-delimiter ;;
-CREATE PROCEDURE `GetAllGoals`()
-BEGIN
-    SELECT * FROM goals;
-END
-;;
-delimiter ;
-
--- ----------------------------
--- Procedure structure for GetGoalByName
--- ----------------------------
-DROP PROCEDURE IF EXISTS `GetGoalByName`;
-delimiter ;;
-CREATE PROCEDURE `GetGoalByName`(IN name_goal VARCHAR(34))
-BEGIN
-    SELECT * FROM goals
-    WHERE name_goal LIKE CONCAT('%', name_goal, '%');
-END
-;;
-delimiter ;
-
--- ----------------------------
--- Procedure structure for InsertGoal
--- ----------------------------
-DROP PROCEDURE IF EXISTS `InsertGoal`;
-delimiter ;;
-CREATE PROCEDURE `InsertGoal`(
-    IN name_goal VARCHAR(34),
-    IN course_id INT
+-- PROCEDURE TABLE GOALS
+-- InsertGoal
+DELIMITER //
+DROP PROCEDURE IF EXISTS InsertGoal;
+CREATE PROCEDURE InsertGoal(
+    IN p_name_goal VARCHAR(34),
+    IN p_course_id INT
 )
 BEGIN
-    DECLARE EXIT HANDLER FOR SQLEXCEPTION 
-    BEGIN
-        ROLLBACK;
-    END;
-
-    START TRANSACTION;
-    
     INSERT INTO goals (name_goal, course_id)
-    VALUES (name_goal, course_id);
+    VALUES (p_name_goal, p_course_id);
+END //
+DELIMITER ;
 
-    COMMIT;
-END
-;;
-delimiter ;
-
--- ----------------------------
--- Procedure structure for UpdateGoal
--- ----------------------------
-DROP PROCEDURE IF EXISTS `UpdateGoal`;
-delimiter ;;
-CREATE PROCEDURE `UpdateGoal`(
-    IN id_goal INT,
-    IN name_goal VARCHAR(34),
-    IN course_id INT
+-- UpdateGoalById
+DELIMITER //
+DROP PROCEDURE IF EXISTS UpdateGoalById;
+CREATE PROCEDURE UpdateGoalById(
+    IN p_id_goal INT,
+    IN p_name_goal VARCHAR(34),
+    IN p_course_id INT
 )
 BEGIN
-    DECLARE EXIT HANDLER FOR SQLEXCEPTION 
-    BEGIN
-        ROLLBACK;
-    END;
-
-    START TRANSACTION;
-
     UPDATE goals
-    SET name_goal = name_goal,
-        course_id = course_id
-    WHERE id_goal = id_goal;
+    SET name_goal = p_name_goal,
+        course_id = p_course_id
+    WHERE id_goal = p_id_goal;
+END //
+DELIMITER ;
 
-    COMMIT;
-END
-;;
-delimiter ;
-
--- ----------------------------
--- Procedure structure for DeleteGoal (logical delete)
--- ----------------------------
-DROP PROCEDURE IF EXISTS `DeleteGoal`;
-delimiter ;;
-CREATE PROCEDURE `DeleteGoal`(
-    IN id_goal INT
-)
+-- GetAllGoals
+DELIMITER //
+DROP PROCEDURE IF EXISTS GetAllGoals;
+CREATE PROCEDURE GetAllGoals()
 BEGIN
-    DECLARE EXIT HANDLER FOR SQLEXCEPTION 
-    BEGIN
-        ROLLBACK;
-    END;
+    SELECT id_goal, name_goal, course_id
+    FROM goals;
+END //
+DELIMITER ;
 
-    START TRANSACTION;
+-- GetGoalById
+DELIMITER //
+DROP PROCEDURE IF EXISTS GetGoalById;
+CREATE PROCEDURE GetGoalById(IN p_id_goal INT)
+BEGIN
+    SELECT id_goal, name_goal, course_id
+    FROM goals
+    WHERE id_goal = p_id_goal;
+END //
+DELIMITER ;
 
+-- DeleteGoalById
+DELIMITER //
+DROP PROCEDURE IF EXISTS DeleteGoalById;
+CREATE PROCEDURE DeleteGoalById(IN p_id_goal INT)
+BEGIN
     DELETE FROM goals
-    WHERE id_goal = id_goal;
-
-    COMMIT;
-END
-;;
-delimiter ;
-
+    WHERE id_goal = p_id_goal;
+END //
+DELIMITER ;
