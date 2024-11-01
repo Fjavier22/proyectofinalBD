@@ -1,20 +1,142 @@
-CREATE TABLE Platforms (
-    Platform_ID INT AUTO_INCREMENT PRIMARY KEY,
-    Platform_Name VARCHAR(255) NOT NULL,
-    Platform_URL VARCHAR(255) NOT NULL,
-    Platform_Type VARCHAR(100),
-    Status VARCHAR(20) NOT NULL  
-);
+-- Drop existing table if necessary
+DROP TABLE IF EXISTS tbl_platforms;
 
--- Tabla de lecciones de usuarios
-CREATE TABLE Lesson_Users (
-    Lesson_User_ID INT AUTO_INCREMENT PRIMARY KEY,
-    User_ID INT NOT NULL,
-    Lesson_ID INT NOT NULL,
-    Completion_Status VARCHAR(50),
-    Completion_Date DATE,
-    Progress_Percentage DECIMAL(5, 2),
-    Status VARCHAR(20) NOT NULL,
-    FOREIGN KEY (User_ID) REFERENCES Users(User_ID),
-    FOREIGN KEY (Lesson_ID) REFERENCES Lessons(Lesson_ID)
-);
+-- Create tbl_platforms table
+CREATE TABLE tbl_platforms (
+    id_platform INT NOT NULL AUTO_INCREMENT,
+    name_platform VARCHAR(100) NOT NULL,
+    status BOOLEAN DEFAULT TRUE,
+    PRIMARY KEY (id_platform)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- Insert Platform
+DELIMITER //
+CREATE PROCEDURE InsertPlatform(
+    IN p_name_platform VARCHAR(100)
+)
+BEGIN
+    INSERT INTO tbl_platforms (name_platform) VALUES (p_name_platform);
+END //
+DELIMITER ;
+
+-- Update Platform by ID
+DELIMITER //
+CREATE PROCEDURE UpdatePlatformById(
+    IN p_id_platform INT,
+    IN p_name_platform VARCHAR(100),
+    IN p_status BOOLEAN
+)
+BEGIN
+    UPDATE tbl_platforms
+    SET name_platform = p_name_platform, status = p_status
+    WHERE id_platform = p_id_platform;
+END //
+DELIMITER ;
+
+-- Get All Platforms
+DELIMITER //
+CREATE PROCEDURE GetAllPlatforms()
+BEGIN
+    SELECT * FROM tbl_platforms WHERE status = TRUE;
+END //
+DELIMITER ;
+
+-- Get Platform by ID
+DELIMITER //
+CREATE PROCEDURE GetPlatformById(IN p_id_platform INT)
+BEGIN
+    SELECT * FROM tbl_platforms WHERE id_platform = p_id_platform AND status = TRUE;
+END //
+DELIMITER ;
+
+-- Delete Logic (Soft Delete) by ID
+DELIMITER //
+CREATE PROCEDURE DeletePlatformById(IN p_id_platform INT)
+BEGIN
+    UPDATE tbl_platforms
+    SET status = FALSE
+    WHERE id_platform = p_id_platform;
+END //
+DELIMITER ;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- Drop existing table if necessary
+DROP TABLE IF EXISTS tbl_lesson_user;
+
+-- Create tbl_lesson_user table
+CREATE TABLE tbl_lesson_user (
+    id_lesson_user INT NOT NULL AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    lesson_id INT NOT NULL,
+    PRIMARY KEY (id_lesson_user),
+    KEY user_id (user_id),
+    KEY lesson_id (lesson_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- Insert Lesson_User
+DELIMITER //
+CREATE PROCEDURE InsertLessonUser(
+    IN p_user_id INT,
+    IN p_lesson_id INT
+)
+BEGIN
+    INSERT INTO tbl_lesson_user (user_id, lesson_id) VALUES (p_user_id, p_lesson_id);
+END //
+DELIMITER ;
+
+-- Update Lesson_User by ID
+DELIMITER //
+CREATE PROCEDURE UpdateLessonUserById(
+    IN p_id_lesson_user INT,
+    IN p_user_id INT,
+    IN p_lesson_id INT
+)
+BEGIN
+    UPDATE tbl_lesson_user
+    SET user_id = p_user_id, lesson_id = p_lesson_id
+    WHERE id_lesson_user = p_id_lesson_user;
+END //
+DELIMITER ;
+
+-- Get All Lesson_Users
+DELIMITER //
+CREATE PROCEDURE GetAllLessonUsers()
+BEGIN
+    SELECT * FROM tbl_lesson_user;
+END //
+DELIMITER ;
+
+-- Get Lesson_User by ID
+DELIMITER //
+CREATE PROCEDURE GetLessonUserById(IN p_id_lesson_user INT)
+BEGIN
+    SELECT * FROM tbl_lesson_user WHERE id_lesson_user = p_id_lesson_user;
+END //
+DELIMITER ;
+
+-- Delete Logic by ID
+DELIMITER //
+CREATE PROCEDURE DeleteLessonUserById(IN p_id_lesson_user INT)
+BEGIN
+    DELETE FROM tbl_lesson_user WHERE id_lesson_user = p_id_lesson_user;
+END //
+DELIMITER ;
+
+
+
+
+
+
+
