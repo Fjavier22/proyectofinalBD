@@ -1,3 +1,20 @@
-colocar aca su script segun tabla asginada, corregida y con procesos almecenados
+CREATE TABLE Platforms (
+    Platform_ID INT AUTO_INCREMENT PRIMARY KEY,
+    Platform_Name VARCHAR(255) NOT NULL,
+    Platform_URL VARCHAR(255) NOT NULL,
+    Platform_Type VARCHAR(100),
+    Status VARCHAR(20) NOT NULL  
+);
 
-create 
+-- Tabla de lecciones de usuarios
+CREATE TABLE Lesson_Users (
+    Lesson_User_ID INT AUTO_INCREMENT PRIMARY KEY,
+    User_ID INT NOT NULL,
+    Lesson_ID INT NOT NULL,
+    Completion_Status VARCHAR(50),
+    Completion_Date DATE,
+    Progress_Percentage DECIMAL(5, 2),
+    Status VARCHAR(20) NOT NULL,
+    FOREIGN KEY (User_ID) REFERENCES Users(User_ID),
+    FOREIGN KEY (Lesson_ID) REFERENCES Lessons(Lesson_ID)
+);
