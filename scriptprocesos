@@ -1,20 +1,53 @@
-CREATE TABLE Platforms (
-    Platform_ID INT AUTO_INCREMENT PRIMARY KEY,
-    Platform_Name VARCHAR(255) NOT NULL,
-    Platform_URL VARCHAR(255) NOT NULL,
-    Platform_Type VARCHAR(100),
-    Status VARCHAR(20) NOT NULL  
+CREATE DATABASE OnlineEducationPlatform;
+USE OnlineEducationPlatform;
+
+CREATE TABLE MainCategory (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE
 );
 
--- Tabla de lecciones de usuarios
-CREATE TABLE Lesson_Users (
-    Lesson_User_ID INT AUTO_INCREMENT PRIMARY KEY,
-    User_ID INT NOT NULL,
-    Lesson_ID INT NOT NULL,
-    Completion_Status VARCHAR(50),
-    Completion_Date DATE,
-    Progress_Percentage DECIMAL(5, 2),
-    Status VARCHAR(20) NOT NULL,
-    FOREIGN KEY (User_ID) REFERENCES Users(User_ID),
-    FOREIGN KEY (Lesson_ID) REFERENCES Lessons(Lesson_ID)
+CREATE TABLE Subcategory (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    main_category_id INT NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (main_category_id) REFERENCES MainCategory(id)
+);
+
+
+CREATE TABLE Course (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    subcategory_id INT NOT NULL,
+    name VARCHAR(200) NOT NULL,
+    description TEXT,
+    
+    price DECIMAL(10, 2) NOT NULL,
+    educational_area VARCHAR(100),
+    difficulty_level ENUM('Beginner', 'Intermediate', 'Advanced') NOT NULL,
+    language VARCHAR(50) NOT NULL DEFAULT 'English',
+    duration_hours INT NOT NULL,
+    enrollment_count INT DEFAULT 0,
+    average_rating DECIMAL(3, 2) DEFAULT 0.00,
+    includes_certificate BOOLEAN DEFAULT FALSE,
+    prerequisites TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    thumbnail_url VARCHAR(255),
+    
+    FOREIGN KEY (subcategory_id) REFERENCES Subcategory(id)
+);
+
+CREATE TABLE Instructor (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    specialty VARCHAR(100)
+);
+
+CREATE TABLE CourseInstructor (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    course_id INT NOT NULL,
+    instructor_id INT NOT NULL,
+    FOREIGN KEY (course_id) REFERENCES Course(id),
+    FOREIGN KEY (instructor_id) REFERENCES Instructor(id)
 );
