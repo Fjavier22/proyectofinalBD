@@ -18,3 +18,17 @@ CREATE TABLE Lesson_Users (
     FOREIGN KEY (User_ID) REFERENCES Users(User_ID),
     FOREIGN KEY (Lesson_ID) REFERENCES Lessons(Lesson_ID)
 );
+
+CREATE TABLE Sections (
+    Section_ID INT AUTO_INCREMENT PRIMARY KEY,
+    Lesson_ID INT NOT NULL,
+    Section_Title VARCHAR(100) NOT NULL,
+    Section_Description TEXT,
+    Duration INT, 
+    Order_Num INT, 
+    Content_Type VARCHAR(50), 
+    Status VARCHAR(20) DEFAULT 'Activo', 
+    Created_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
+    Updated_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    FOREIGN KEY (Lesson_ID) REFERENCES Lessons(Lesson_ID)
+);
