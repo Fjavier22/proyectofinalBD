@@ -90,3 +90,95 @@ END //
 DELIMITER ;
 
 
+-- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+-- ----------------------------
+-- Table structure for REVIEWS
+-- ----------------------------
+DROP TABLE IF EXISTS `reviews`;
+
+CREATE TABLE `reviews` (
+  `id_review` INT NOT NULL AUTO_INCREMENT,
+  `comment_review` TEXT COLLATE utf8mb4_general_ci NOT NULL,  -- Texto de la reseña
+  `rating_review` INT NOT NULL,  -- Valor numérico para la calificación
+  `user_id` INT DEFAULT NULL,
+  `course_id` INT DEFAULT NULL,
+  `estado` TINYINT(1) DEFAULT 1,  -- Estado de la reseña: 1 (activa), 0 (inactiva)
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- Fecha de creación
+  PRIMARY KEY (`id_review`),
+  KEY `user_id` (`user_id`),
+  KEY `course_id` (`course_id`),
+  CONSTRAINT `reviews_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id_user`),
+  CONSTRAINT `reviews_ibfk_2` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id_course`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- :::::::::::::::::::::::
+
+-- PROCEDURE tbl_comments
+-- PROCEDURE TABLE tbl_comments
+
+-- Procedimiento para insertar una nueva reseña
+DELIMITER $$
+CREATE PROCEDURE InsertReview(
+    IN comment_review TEXT,
+    IN rating_review INT,
+    IN user_id INT,
+    IN course_id INT
+)
+BEGIN
+    INSERT INTO reviews (comment_review, rating_review, user_id, course_id)
+    VALUES (comment_review, rating_review, user_id, course_id);
+END $$
+DELIMITER ;
+
+-- Procedimiento para actualizar una reseña existente
+DELIMITER $$
+CREATE PROCEDURE UpdateReview(
+    IN id_review INT,
+    IN comment_review TEXT,
+    IN rating_review INT,
+    IN estado TINYINT
+)
+BEGIN
+    UPDATE reviews
+    SET comment_review = comment_review,
+        rating_review = rating_review,
+        estado = estado
+    WHERE id_review = id_review;
+END $$
+DELIMITER ;
+
+-- Procedimiento para obtener todas las reseñas
+DELIMITER $$
+CREATE PROCEDURE GetAllReviews()
+BEGIN
+    SELECT * FROM reviews;
+END $$
+DELIMITER ;
+
+-- Procedimiento para buscar reseñas por comentario
+DELIMITER $$
+CREATE PROCEDURE GetReviewsByComment(
+    IN comment VARCHAR(255)
+)
+BEGIN
+    SELECT * FROM reviews
+    WHERE comment_review LIKE CONCAT('%', comment, '%');
+END $$
+DELIMITER ;
+
+-- Procedimiento para eliminar una reseña (de forma lógica)
+DELIMITER $$
+CREATE PROCEDURE DeleteReview(
+    IN id_review INT
+)
+BEGIN
+    UPDATE reviews
+    SET estado = 0 -- Cambiar el estado a inactivo
+    WHERE id_review = id_review;
+END $$
+DELIMITER ;
+
+
+
+
