@@ -1,1 +1,273 @@
-archivo para script
+tablas: Prices y requirements
+
+-- ----------------------------
+-- Table structure for requirements
+-- ----------------------------
+DROP TABLE IF EXISTS `requirements`;
+CREATE TABLE `requirements` (
+  `id_requirement` int NOT NULL AUTO_INCREMENT,
+  `name_requirement` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `course_id` int NOT NULL,
+  PRIMARY KEY (`id_requirement`),
+  KEY `course_id` (`course_id`),
+  CONSTRAINT `requirements_ibfk_1` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id_course`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Records of requirements
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+
+-- ----------------------------
+-- Table structure for prices
+-- ----------------------------
+DROP TABLE IF EXISTS `prices`;
+CREATE TABLE `prices` (
+  `id_price` int NOT NULL AUTO_INCREMENT,
+  `amount_price` decimal(10,2) DEFAULT NULL,
+  PRIMARY KEY (`id_price`),
+  CONSTRAINT `price_id` FOREIGN KEY (`id_price`) REFERENCES `courses` (`price_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Records of prices
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for prices
+-- ----------------------------
+DROP TABLE IF EXISTS `prices`;
+CREATE TABLE `prices` (
+  `id_price` int NOT NULL AUTO_INCREMENT,
+  `amount_price` decimal(10,2) DEFAULT NULL,
+  PRIMARY KEY (`id_price`),
+  CONSTRAINT `price_id` FOREIGN KEY (`id_price`) REFERENCES `courses` (`price_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Records of prices
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+
+------------scrip para los procedimientos almacenados de las tablas----------------
+
+-- SCRIPT PARA EL PROCESO ALMACENADO DE LA TABLA requirements
+
+-- ----------------------------
+-- Procedure structure for InsertRequirement
+-- ----------------------------
+DROP PROCEDURE IF EXISTS `InsertRequirement`;
+DELIMITER ;;
+CREATE PROCEDURE `InsertRequirement`(
+    IN name_requirement VARCHAR(45),
+    IN course_id INT)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION 
+    BEGIN
+        ROLLBACK;
+    END;
+
+    START TRANSACTION;
+
+    INSERT INTO requirements (name_requirement, course_id)
+    VALUES (name_requirement, course_id);
+
+    COMMIT;
+END ;;
+DELIMITER ;
+
+-- Metodo para probarlo
+CALL InsertRequirement('Nuevo Requisito', 1);
+SELECT * FROM requirements;
+
+-- ----------------------------
+-- Procedure structure for UpdateRequirement
+-- ----------------------------
+DROP PROCEDURE IF EXISTS `UpdateRequirement`;
+DELIMITER ;;
+CREATE PROCEDURE `UpdateRequirement`(
+    IN id_requirement INT,
+    IN name_requirement VARCHAR(45),
+    IN course_id INT)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION 
+    BEGIN
+        ROLLBACK;
+    END;
+
+    START TRANSACTION;
+
+    UPDATE requirements
+    SET name_requirement = name_requirement,
+        course_id = course_id
+    WHERE id_requirement = id_requirement;
+
+    COMMIT;
+END ;;
+DELIMITER ;
+
+-- actualizar un requirement
+CALL UpdateRequirement(1, 'Requisito Actualizado', 2);
+
+-- ----------------------------
+-- Procedure structure for GetAllRequirements
+-- ----------------------------
+DROP PROCEDURE IF EXISTS `GetAllRequirements`;
+DELIMITER ;;
+CREATE PROCEDURE `GetAllRequirements`()
+BEGIN
+    SELECT * FROM requirements;
+END ;;
+DELIMITER ;
+
+-- ----------------------------
+-- Procedure structure for GetRequirementByName
+-- ----------------------------
+DROP PROCEDURE IF EXISTS `GetRequirementByName`;
+DELIMITER ;;
+CREATE PROCEDURE `GetRequirementByName`(IN name_req VARCHAR(45))
+BEGIN
+    SELECT * FROM requirements
+    WHERE name_requirement LIKE CONCAT('%', name_req, '%');
+END ;;
+DELIMITER ;
+
+-- ----------------------------
+-- Procedure structure for DeleteRequirement (Logical Delete)
+-- ----------------------------
+DROP PROCEDURE IF EXISTS `DeleteRequirement`;
+DELIMITER ;;
+CREATE PROCEDURE `DeleteRequirement`(IN id_requirement INT)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION 
+    BEGIN
+        ROLLBACK;
+    END;
+
+    START TRANSACTION;
+
+    -- Lógica para eliminar: simplemente podrías agregar un campo adicional como "active" para marcarlo como eliminado
+    UPDATE requirements
+    SET name_requirement = CONCAT(name_requirement, '_deleted') -- ejemplo de una marca lógica
+    WHERE id_requirement = id_requirement;
+
+    COMMIT;
+END ;;
+DELIMITER ;
+
+
+-- SCRIP DEL PROCESO ALMACENADO DE PRICES
+
+-- ----------------------------
+-- Procedure structure for InsertPrice
+-- ----------------------------
+DROP PROCEDURE IF EXISTS `InsertPrice`;
+DELIMITER ;;
+CREATE PROCEDURE `InsertPrice`(IN amount_price DECIMAL(10,2))
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION 
+    BEGIN
+        ROLLBACK;
+    END;
+
+    START TRANSACTION;
+
+    INSERT INTO prices (amount_price)
+    VALUES (amount_price);
+
+    COMMIT;
+END ;;
+DELIMITER ;
+
+-- insert para prueba de price 
+SELECT * FROM prices;
+
+INSERT INTO prices (id_price, amount_price) 
+VALUES (2, 99.99);
+
+-- insersion de datos de prueba en la tabla de cursos para probar que el prices este funcionando bien
+INSERT INTO courses (title_course, subtitle_course, description_course, status_course, user_id, level_id, category_id, price_id)
+VALUES ('programacion', 'progra', 'progra basica', 1, 101, 5, 3, 2);
+
+-- ----------------------------
+-- Procedure structure for UpdatePrice
+-- ----------------------------
+DROP PROCEDURE IF EXISTS `UpdatePrice`;
+DELIMITER ;;
+CREATE PROCEDURE `UpdatePrice`(IN id_price INT, IN amount_price DECIMAL(10,2))
+
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION 
+    BEGIN
+        ROLLBACK;
+    END;
+
+    START TRANSACTION;
+
+    UPDATE prices
+    SET amount_price = amount_price
+    WHERE id_price = id_price;
+
+    COMMIT;
+END ;;
+DELIMITER ;
+
+-- prueba de actualizacion de datos de la tabla prices
+UPDATE prices SET amount_price = 80.50 
+WHERE id_price = 2 
+
+
+-- ----------------------------
+-- Procedure structure for GetAllPrices
+-- ----------------------------
+DROP PROCEDURE IF EXISTS `GetAllPrices`;
+DELIMITER ;;
+CREATE PROCEDURE `GetAllPrices`()
+BEGIN
+    SELECT * FROM prices;
+END ;;
+DELIMITER ;
+
+-- prueba de 
+
+
+-- ----------------------------
+-- Procedure structure for GetPriceById
+-- ----------------------------
+DROP PROCEDURE IF EXISTS `GetPriceById`;
+DELIMITER ;;
+CREATE PROCEDURE `GetPriceById`(IN id_price INT)
+BEGIN
+    SELECT * FROM prices
+    WHERE id_price = id_price;
+END ;;
+DELIMITER ;
+
+-- ----------------------------
+-- Procedure structure for DeletePrice (Logical Delete)
+-- ----------------------------
+DROP PROCEDURE IF EXISTS `DeletePrice`;
+DELIMITER ;;
+CREATE PROCEDURE `DeletePrice`(IN id_price INT)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION 
+    BEGIN
+        ROLLBACK;
+    END;
+
+    START TRANSACTION;
+
+    -- Lógica para eliminar de forma lógica: se puede usar un campo adicional o modificar el registro
+    UPDATE prices
+    SET amount_price = NULL -- ejemplo de eliminación lógica (se podría usar otra estrategia)
+    WHERE id_price = id_price;
+
+    COMMIT;
+END ;;
+DELIMITER ;
