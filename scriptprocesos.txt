@@ -1,1 +1,92 @@
-//ingresar segun tabla asignada los procesos almacenados
+-- Table structure for comments
+-- Tabla comments (polimorfica)
+-- ----------------------------
+DROP TABLE IF EXISTS `tbl_comments`;
+
+CREATE TABLE `tbl_comments` (
+  `id_comment` INT NOT NULL AUTO_INCREMENT,
+  `content` TEXT COLLATE utf8mb4_general_ci NOT NULL, -- Texto del comentario
+  `commentable_id` INT NOT NULL,
+  `commentable_type` VARCHAR(45) COLLATE utf8mb4_general_ci NOT NULL,
+  `user_id` INT DEFAULT NULL,
+  `estado` TINYINT(1) DEFAULT 1, -- Estado del comentario: 1 (activo), 0 (inactivo)
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Fecha de creación del comentario
+  PRIMARY KEY (`id_comment`),
+  KEY `user_id` (`user_id`),
+  KEY `commentable` (`commentable_id`, `commentable_type`), -- Índice combinado para mejorar el rendimiento
+  CONSTRAINT `comments_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id_user`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+-- ----------------------------
+-- Records of comments
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+--::::::::::::::::::::::::::::::
+
+-- PROCEDURE tbl_comments
+-- PROCEDURE TABLE tbl_comments
+
+-- Procedimiento almacenado para insertar un nuevo comentario
+DELIMITER //
+CREATE PROCEDURE InsertComment(
+    IN commentable_id INT,
+    IN commentable_type VARCHAR(45),
+    IN user_id INT,
+    IN content TEXT
+)
+BEGIN
+    INSERT INTO comments (commentable_id, commentable_type, user_id, content, created_at, estado)
+    VALUES (commentable_id, commentable_type, user_id, content, NOW(), 1);
+END //
+DELIMITER ;
+
+-- Procedimiento almacenado para actualizar un comentario existente
+DELIMITER //
+CREATE PROCEDURE UpdateComment(
+    IN id_comment INT,
+    IN content TEXT,
+    IN estado TINYINT
+)
+BEGIN
+    UPDATE comments
+    SET content = content,
+        estado = estado
+    WHERE id_comment = id_comment;
+END //
+DELIMITER ;
+
+-- Procedimiento almacenado para obtener todos los comentarios
+DELIMITER //
+CREATE PROCEDURE GetAllComments()
+BEGIN
+    SELECT * FROM comments;
+END //
+DELIMITER ;
+
+-- Procedimiento almacenado para buscar comentarios por el contenido
+DELIMITER //
+CREATE PROCEDURE GetCommentsByContent(
+    IN content VARCHAR(255)
+)
+BEGIN
+    SELECT * FROM comments
+    WHERE content LIKE CONCAT('%', content, '%');
+END //
+DELIMITER ;
+
+-- Procedimiento almacenado para eliminar un comentario de forma lógica
+DELIMITER //
+CREATE PROCEDURE DeleteComment(
+    IN id_comment INT
+)
+BEGIN
+    UPDATE comments
+    SET estado = 0  -- Cambiamos el estado a inactivo
+    WHERE id_comment = id_comment;
+END //
+DELIMITER ;
+
+
