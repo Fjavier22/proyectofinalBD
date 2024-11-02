@@ -18,4 +18,27 @@ CREATE TABLE `descriptions` (
 BEGIN;
 COMMIT;
 
+-- Eliminamos la tabla lessons si existe
+DROP TABLE IF EXISTS `lessons`;
+
+-- Creamos la tabla lessons
+CREATE TABLE `lessons` (
+  `id_lesson` INT NOT NULL AUTO_INCREMENT,
+  `name_lesson` VARCHAR(100) COLLATE utf8mb4_general_ci NOT NULL, -- Aumentado el tamaño y se establece NOT NULL
+  `url_lesson` VARCHAR(255) COLLATE utf8mb4_general_ci DEFAULT NULL, -- Aumentado el tamaño para URLs
+  `iframe_lesson` TEXT COLLATE utf8mb4_general_ci DEFAULT NULL, -- Cambiado a TEXT para mayor capacidad
+  `section_id` INT DEFAULT NULL, -- Asegúrate de que esta columna esté relacionada con otra tabla
+  `platform_id` INT DEFAULT NULL, -- Asegúrate de que esta columna esté relacionada con otra tabla
+  `status` TINYINT(1) DEFAULT 1, -- Estado de la lección: 1 (activo), 0 (inactivo)
+  PRIMARY KEY (`id_lesson`),
+  KEY `idx_platform_id` (`platform_id`), -- Renombrado el índice para mayor claridad
+  CONSTRAINT `fk_platform_id` FOREIGN KEY (`platform_id`) REFERENCES `platforms` (`id_platform`) ON DELETE SET NULL, -- Asegúrate de que la tabla platforms exista
+  CONSTRAINT `fk_section_id` FOREIGN KEY (`section_id`) REFERENCES `sections` (`id_section`) ON DELETE SET NULL -- Asegúrate de que la tabla sections exista
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Records of lessons
+-- ----------------------------
+BEGIN;
+COMMIT;
 
