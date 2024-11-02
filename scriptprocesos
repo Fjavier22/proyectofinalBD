@@ -1,105 +1,69 @@
-DROP TABLE IF EXISTS `audiences`;
-CREATE TABLE `audiences` (
+-- Eliminamos la tabla audiences si existe
+DROP TABLE IF EXISTS `Tbl_Audiences`;
+
+-- Creamos la tabla Tbl_Audiences
+CREATE TABLE `Tbl_Audiences` (
   `id_audience` INT NOT NULL AUTO_INCREMENT,
   `name_audience` VARCHAR(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `course_id` INT NOT NULL,
-  `status` TINYINT(1) DEFAULT 1, -- 1 activo, 0 inactivo para eliminación lógica
+  `status` TINYINT(1) DEFAULT 1, -- Estado de la audiencia: 1 (activo), 0 (inactivo)
   PRIMARY KEY (`id_audience`),
   KEY `course_id` (`course_id`),
   CONSTRAINT `audiences_ibfk_1` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id_course`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
--- Tabla para almacenar nombres de audiencia
-CREATE TABLE `audience_names` (
-  `id_audience_name` INT NOT NULL AUTO_INCREMENT,
-  `name_audience` VARCHAR(45) COLLATE utf8mb4_general_ci NOT NULL,
-  PRIMARY KEY (`id_audience_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Tabla para relacionar nombres de audiencia con cursos
-CREATE TABLE `audience_courses` (
-  `id_audience_course` INT NOT NULL AUTO_INCREMENT,
-  `id_audience_name` INT NOT NULL,
-  `course_id` INT NOT NULL,
-  PRIMARY KEY (`id_audience_course`),
-  FOREIGN KEY (`id_audience_name`) REFERENCES `audience_names` (`id_audience_name`),
-  FOREIGN KEY (`course_id`) REFERENCES `courses` (`id_course`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- Tabla principal de audiencias para almacenar el estado de cada audiencia
-CREATE TABLE `audiences` (
-  `id_audience` INT NOT NULL AUTO_INCREMENT,
-  `id_audience_name` INT NOT NULL,
-  `status` TINYINT(1) DEFAULT 1, -- 1 activo, 0 inactivo para eliminación lógica
-  PRIMARY KEY (`id_audience`),
-  FOREIGN KEY (`id_audience_name`) REFERENCES `audience_names` (`id_audience_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-DELIMITER //
-CREATE PROCEDURE InsertAudience(IN p_name_audience VARCHAR(45), IN p_course_id INT)
-BEGIN
-  DECLARE v_id_audience_name INT;
-  
-  -- Insertar el nombre de la audiencia si no existe
-  INSERT INTO audience_names (name_audience) 
-  VALUES (p_name_audience)
-  ON DUPLICATE KEY UPDATE id_audience_name = LAST_INSERT_ID(id_audience_name);
-  
-  SET v_id_audience_name = LAST_INSERT_ID();
-  
-  -- Relacionar la audiencia con el curso en audience_courses
-  INSERT INTO audience_courses (id_audience_name, course_id) 
-  VALUES (v_id_audience_name, p_course_id);
-  
-  -- Insertar en audiences con el estado activo
-  INSERT INTO audiences (id_audience_name, status) VALUES (v_id_audience_name, 1);
-END//
-DELIMITER ;
-DELIMITER //
-CREATE PROCEDURE UpdateAudience(
-  IN p_id_audience INT,
-  IN p_name_audience VARCHAR(45),
-  IN p_course_id INT
+DELIMITER $$
+CREATE PROCEDURE InsertAudience(
+    IN p_name_audience VARCHAR(45),
+    IN p_course_id INT
 )
 BEGIN
-  DECLARE v_id_audience_name INT;
-
-  -- Actualizar el nombre en audience_names
-  UPDATE audience_names 
-  SET name_audience = p_name_audience 
-  WHERE id_audience_name = (SELECT id_audience_name FROM audiences WHERE id_audience = p_id_audience);
-
-  -- Actualizar el curso en audience_courses
-  SET v_id_audience_name = (SELECT id_audience_name FROM audiences WHERE id_audience = p_id_audience);
-  UPDATE audience_courses 
-  SET course_id = p_course_id 
-  WHERE id_audience_name = v_id_audience_name;
-END//
+    INSERT INTO Tbl_Audiences (name_audience, course_id, status)
+    VALUES (p_name_audience, p_course_id, 1);
+END $$
 DELIMITER ;
-DELIMITER //
+
+DELIMITER $$
+CREATE PROCEDURE UpdateAudience(
+    IN p_id_audience INT,
+    IN p_name_audience VARCHAR(45),
+    IN p_course_id INT,
+    IN p_status TINYINT
+)
+BEGIN
+    UPDATE Tbl_Audiences
+    SET name_audience = p_name_audience,
+        course_id = p_course_id,
+        status = p_status
+    WHERE id_audience = p_id_audience;
+END $$
+DELIMITER ;
+
+DELIMITER $$
 CREATE PROCEDURE GetAllAudiences()
 BEGIN
-  SELECT a.id_audience, an.name_audience, ac.course_id
-  FROM audiences a
-  JOIN audience_names an ON a.id_audience_name = an.id_audience_name
-  JOIN audience_courses ac ON an.id_audience_name = ac.id_audience_name
-  WHERE a.status = 1;
-END//
-DELIMITER ;
-DELIMITER //
-CREATE PROCEDURE GetAudienceByName(IN p_name_audience VARCHAR(45))
-BEGIN
-  SELECT a.id_audience, an.name_audience, ac.course_id
-  FROM audiences a
-  JOIN audience_names an ON a.id_audience_name = an.id_audience_name
-  JOIN audience_courses ac ON an.id_audience_name = ac.id_audience_name
-  WHERE an.name_audience LIKE CONCAT('%', p_name_audience, '%') AND a.status = 1;
-END//
-DELIMITER ;
-DELIMITER //
-CREATE PROCEDURE DeleteAudience(IN p_id_audience INT)
-BEGIN
-  UPDATE audiences 
-  SET status = 0 
-  WHERE id_audience = p_id_audience;
-END//
+    SELECT * FROM Tbl_Audiences
+    WHERE status = 1;
+END $$
 DELIMITER ;
 
+DELIMITER $$
+CREATE PROCEDURE GetAudiencesByName(
+    IN p_name_audience VARCHAR(45)
+)
+BEGIN
+    SELECT * FROM Tbl_Audiences
+    WHERE name_audience LIKE CONCAT('%', p_name_audience, '%') AND status = 1;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE DeleteAudience(
+    IN p_id_audience INT
+)
+BEGIN
+    UPDATE Tbl_Audiences
+    SET status = 0 -- Cambiamos el estado a inactivo
+    WHERE id_audience = p_id_audience;
+END $$
+DELIMITER ;
