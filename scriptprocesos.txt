@@ -248,6 +248,94 @@ BEGIN
 END //
 DELIMITER ;
 
+:::::::::::::::TABLE LESSON:::::::::::::::
+-- Eliminamos la tabla lessons si existe
+DROP TABLE IF EXISTS `Tbl_Lessons`;
+
+-- Creamos la tabla Tbl_Lessons
+CREATE TABLE `Tbl_Lessons` (
+  `id_lesson` INT NOT NULL AUTO_INCREMENT,
+  `name_lesson` VARCHAR(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `url_lesson` VARCHAR(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `iframe_lesson` VARCHAR(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `section_id` INT DEFAULT NULL,
+  `platform_id` INT DEFAULT NULL,
+  PRIMARY KEY (`id_lesson`),
+  KEY `platform_id` (`platform_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Records of Tbl_Lessons
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+
+DELIMITER $$
+CREATE PROCEDURE InsertLesson(
+    IN p_name_lesson VARCHAR(45),
+    IN p_url_lesson VARCHAR(45),
+    IN p_iframe_lesson VARCHAR(255),
+    IN p_section_id INT,
+    IN p_platform_id INT
+)
+BEGIN
+    INSERT INTO Tbl_Lessons (name_lesson, url_lesson, iframe_lesson, section_id, platform_id)
+    VALUES (p_name_lesson, p_url_lesson, p_iframe_lesson, p_section_id, p_platform_id);
+END $$
+DELIMITER ;
+
+
+DELIMITER $$
+CREATE PROCEDURE UpdateLesson(
+    IN p_id_lesson INT,
+    IN p_name_lesson VARCHAR(45),
+    IN p_url_lesson VARCHAR(45),
+    IN p_iframe_lesson VARCHAR(255),
+    IN p_section_id INT,
+    IN p_platform_id INT
+)
+BEGIN
+    UPDATE Tbl_Lessons
+    SET name_lesson = p_name_lesson,
+        url_lesson = p_url_lesson,
+        iframe_lesson = p_iframe_lesson,
+        section_id = p_section_id,
+        platform_id = p_platform_id
+    WHERE id_lesson = p_id_lesson;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE GetAllLessons()
+BEGIN
+    SELECT * FROM Tbl_Lessons;
+END $$
+DELIMITER ;
+
+
+DELIMITER $$
+CREATE PROCEDURE GetLessonsByName(
+    IN p_name_lesson VARCHAR(45)
+)
+BEGIN
+    SELECT * FROM Tbl_Lessons
+    WHERE name_lesson LIKE CONCAT('%', p_name_lesson, '%');
+END $$
+DELIMITER ;
+
+
+DELIMITER $$
+CREATE PROCEDURE DeleteLesson(
+    IN p_id_lesson INT
+)
+BEGIN
+    UPDATE Tbl_Lessons
+    SET name_lesson = NULL -- O podrías usar un campo de estado si se necesita
+    WHERE id_lesson = p_id_lesson;
+END $$
+DELIMITER ;
+
 :::::::::::::::::::::::::::::::::::::::::: JAVIER - ABNER :::::::::::::::::::::::::::::::::
 -- Eliminamos la tabla users si existe
 DROP TABLE IF EXISTS `users`;
