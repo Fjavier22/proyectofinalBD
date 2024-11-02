@@ -173,3 +173,315 @@ BEGIN
     WHERE id_goal = p_id_goal;
 END //
 DELIMITER ;
+
+:::::::::::::::::::::::::::::::::::::::::: JAVIER - ABNER :::::::::::::::::::::::::::::::::
+-- Eliminamos la tabla users si existe
+DROP TABLE IF EXISTS `users`;
+
+-- Creamos la tabla users
+CREATE TABLE `tbl_users` (
+  `id_user` int NOT NULL AUTO_INCREMENT,
+  `name_user` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `email_user` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `password_user` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  PRIMARY KEY (`id_user`),
+  KEY `user_id` (`id_user`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+ALTER TABLE `tbl_users` ADD COLUMN `active` BOOLEAN DEFAULT TRUE;
+
+-------------------
+BEGIN;
+COMMIT;
+
+
+-- insertUser
+
+DELIMITER //
+CREATE PROCEDURE InsertUser(
+    IN p_name_user VARCHAR(45),
+    IN p_email_user VARCHAR(45),
+    IN p_password_user VARCHAR(45)
+)
+BEGIN
+    INSERT INTO tbl_users (name_user, email_user, password_user, active)
+    VALUES (p_name_user, p_email_user, p_password_user, TRUE);
+END //
+DELIMITER ;
+
+
+-- update user 
+DELIMITER //
+
+CREATE PROCEDURE UpdateUserByName(
+    IN p_name VARCHAR(45),
+    IN p_email VARCHAR(45),
+    IN p_password VARCHAR(45),
+    IN p_active BOOLEAN
+)
+BEGIN
+    UPDATE tbl_users
+    SET email_user = p_email,
+        password_user = p_password,
+        active = p_active
+    WHERE name_user = p_name;
+END //
+
+DELIMITER ;
+
+
+
+-- GetAllUser 
+DELIMITER //
+CREATE PROCEDURE GetAllUsers()
+BEGIN
+    SELECT name_user, email_user
+    FROM tbl_users
+    WHERE active = TRUE;
+END //
+DELIMITER ;
+
+
+-- Get User By Name
+
+DELIMITER //
+CREATE PROCEDURE GetUserByName(IN p_name VARCHAR(45))
+BEGIN
+    SELECT name_user, email_user
+    FROM tbl_users
+    WHERE name_user LIKE CONCAT('%', p_name, '%') AND active = TRUE;
+END //
+DELIMITER ;
+
+
+-- Delete Logic 
+DELIMITER //
+
+CREATE PROCEDURE DeleteUserByName(IN p_name VARCHAR(45))
+BEGIN
+    UPDATE tbl_users
+    SET active = FALSE
+    WHERE name_user = p_name;
+END //
+
+DELIMITER ;
+
+
+
+DROP TABLE IF EXISTS course_user;
+CREATE TABLE course_user (
+  user_id int NOT NULL,
+  course_id int NOT NULL,
+  PRIMARY KEY (user_id,course_id),
+  KEY course_id (course_id),
+  CONSTRAINT course_user_ibfk_1 FOREIGN KEY (user_id) REFERENCES tbl_users (id_user),
+  CONSTRAINT course_user_ibfk_2 FOREIGN KEY (course_id) REFERENCES courses (id_course)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Records of course_user
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+
+
+-- :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+-- Eliminamos la tabla courses si existe
+DROP TABLE IF EXISTS `courses`;
+
+-- Creamos la tabla courses
+CREATE TABLE `courses` (
+  `id_course` INT NOT NULL AUTO_INCREMENT,
+  `course_name` VARCHAR(100) NOT NULL, -- Nombre del curso
+  `description` TEXT COLLATE utf8mb4_general_ci, -- Descripción del curso
+  `status` TINYINT(1) DEFAULT 1, -- Estado del curso: 1 (activo), 0 (inactivo)
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Fecha de creación del curso
+  PRIMARY KEY (`id_course`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+-- Table structure for comments
+-- Tabla comments (polimorfica)
+-- ----------------------------
+DROP TABLE IF EXISTS `tbl_comments`;
+
+CREATE TABLE `tbl_comments` (
+  `id_comment` INT NOT NULL AUTO_INCREMENT,
+  `content` TEXT COLLATE utf8mb4_general_ci NOT NULL, -- Texto del comentario
+  `commentable_id` INT NOT NULL,
+  `commentable_type` VARCHAR(45) COLLATE utf8mb4_general_ci NOT NULL,
+  `id_user` INT DEFAULT NULL,
+  `status` TINYINT(1) DEFAULT 1, -- Estado del comentario: 1 (activo), 0 (inactivo)
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Fecha de creación del comentario
+  PRIMARY KEY (`id_comment`),
+  KEY `id_user` (`id_user`),
+  KEY `commentable` (`commentable_id`, `commentable_type`), -- Índice combinado para mejorar el rendimiento
+  CONSTRAINT `comments_ibfk_1` FOREIGN KEY (`id_user`) REFERENCES `tbl_users` (`id_user`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+-- ----------------------------
+-- Records of comments
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+--::::::::::::::::::::::::::::::
+
+-- PROCEDURE tbl_comments
+-- PROCEDURE TABLE tbl_comments
+
+-- Procedimiento almacenado para insertar un nuevo comentario
+DELIMITER //
+CREATE PROCEDURE InsertComment(
+    IN commentable_id INT,
+    IN commentable_type VARCHAR(45),
+    IN id_user INT,
+    IN content TEXT
+)
+BEGIN
+    INSERT INTO comments (commentable_id, commentable_type, id_user, content, created_at, estado)
+    VALUES (commentable_id, commentable_type, id_user, content, NOW(), 1);
+END //
+DELIMITER ;
+
+-- Procedimiento almacenado para actualizar un comentario existente
+DELIMITER //
+CREATE PROCEDURE UpdateComment(
+    IN id_comment INT,
+    IN content TEXT,
+    IN estado TINYINT
+)
+BEGIN
+    UPDATE comments
+    SET content = content,
+        estado = estado
+    WHERE id_comment = id_comment;
+END //
+DELIMITER ;
+
+-- Procedimiento almacenado para obtener todos los comentarios
+DELIMITER //
+CREATE PROCEDURE GetAllComments()
+BEGIN
+    SELECT * FROM comments;
+END //
+DELIMITER ;
+
+-- Procedimiento almacenado para buscar comentarios por el contenido
+DELIMITER //
+CREATE PROCEDURE GetCommentsByContent(
+    IN content VARCHAR(255)
+)
+BEGIN
+    SELECT * FROM comments
+    WHERE content LIKE CONCAT('%', content, '%');
+END //
+DELIMITER ;
+
+-- Procedimiento almacenado para eliminar un comentario de forma lógica
+DELIMITER //
+CREATE PROCEDURE DeleteComment(
+    IN id_comment INT
+)
+BEGIN
+    UPDATE comments
+    SET estado = 0  -- Cambiamos el estado a inactivo
+    WHERE id_comment = id_comment;
+END //
+DELIMITER ;
+
+
+-- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+-- ----------------------------
+-- Table structure for REVIEWS
+-- ----------------------------
+DROP TABLE IF EXISTS `reviews`;
+
+CREATE TABLE `tbl_reviews` (
+  `id_review` INT NOT NULL AUTO_INCREMENT,
+  `comment_review` TEXT COLLATE utf8mb4_general_ci NOT NULL,  -- Texto de la reseña
+  `rating_review` INT NOT NULL,  -- Valor numérico para la calificación
+  `id_user` INT DEFAULT NULL,
+  `course_id` INT DEFAULT NULL,
+  `status` TINYINT(1) DEFAULT 1,  -- Estado de la reseña: 1 (activa), 0 (inactiva)
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- Fecha de creación
+  PRIMARY KEY (`id_review`),
+  KEY `id_user` (`id_user`),
+  KEY `course_id` (`course_id`),
+  CONSTRAINT `reviews_ibfk_1` FOREIGN KEY (`id_user`) REFERENCES `tbl_users` (`id_user`),
+  CONSTRAINT `reviews_ibfk_2` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id_course`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- :::::::::::::::::::::::
+
+-- PROCEDURE tbl_comments
+-- PROCEDURE TABLE tbl_comments
+
+-- Procedimiento para insertar una nueva reseña
+DELIMITER $$
+CREATE PROCEDURE InsertReview(
+    IN comment_review TEXT,
+    IN rating_review INT,
+    IN id_user INT,
+    IN course_id INT
+)
+BEGIN
+    INSERT INTO reviews (comment_review, rating_review, id_user, course_id)
+    VALUES (comment_review, rating_review, id_user, course_id);
+END $$
+DELIMITER ;
+
+-- Procedimiento para actualizar una reseña existente
+DELIMITER $$
+CREATE PROCEDURE UpdateReview(
+    IN id_review INT,
+    IN comment_review TEXT,
+    IN rating_review INT,
+    IN estado TINYINT
+)
+BEGIN
+    UPDATE reviews
+    SET comment_review = comment_review,
+        rating_review = rating_review,
+        estado = estado
+    WHERE id_review = id_review;
+END $$
+DELIMITER ;
+
+-- Procedimiento para obtener todas las reseñas
+DELIMITER $$
+CREATE PROCEDURE GetAllReviews()
+BEGIN
+    SELECT * FROM reviews;
+END $$
+DELIMITER ;
+
+-- Procedimiento para buscar reseñas por comentario
+DELIMITER $$
+CREATE PROCEDURE GetReviewsByComment(
+    IN comment VARCHAR(255)
+)
+BEGIN
+    SELECT * FROM reviews
+    WHERE comment_review LIKE CONCAT('%', comment, '%');
+END $$
+DELIMITER ;
+
+-- Procedimiento para eliminar una reseña (de forma lógica)
+DELIMITER $$
+CREATE PROCEDURE DeleteReview(
+    IN id_review INT
+)
+BEGIN
+    UPDATE reviews
+    SET estado = 0 -- Cambiar el estado a inactivo
+    WHERE id_review = id_review;
+END $$
+DELIMITER ;
+
+
+
+
+
