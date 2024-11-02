@@ -1,0 +1,131 @@
+----------------------------------------------------------
+-- Procedimientos almacenados para la tabla tbl_images----
+----------------------------------------------------------
+
+-- Procedimiento para insertar una nueva imagen
+DELIMITER //
+CREATE PROCEDURE InsertImage(
+    IN p_url_image VARCHAR(255),
+    IN p_imageable_id INT,
+    IN p_imageable_type VARCHAR(45)
+)
+BEGIN
+    INSERT INTO tbl_images (url_image, imageable_id, imageable_type, status, created_at)
+    VALUES (p_url_image, p_imageable_id, UPPER(p_imageable_type), 1, NOW());
+END //
+DELIMITER ;
+
+-- Procedimiento para actualizar una imagen existente
+DELIMITER //
+CREATE PROCEDURE UpdateImage(
+    IN p_id_image INT,
+    IN p_url_image VARCHAR(255),
+    IN p_imageable_id INT,
+    IN p_imageable_type VARCHAR(45),
+    IN p_status TINYINT
+)
+BEGIN
+    UPDATE tbl_images
+    SET url_image = p_url_image,
+        imageable_id = p_imageable_id,
+        imageable_type = UPPER(p_imageable_type),
+        status = p_status
+    WHERE id_image = p_id_image;
+END //
+DELIMITER ;
+
+-- Procedimiento para obtener todas las imágenes activas
+DELIMITER //
+CREATE PROCEDURE GetAllActiveImages()
+BEGIN
+    SELECT * FROM tbl_images
+    WHERE status = 1;
+END //
+DELIMITER ;
+
+-- Procedimiento para buscar imágenes por tipo de contenido
+DELIMITER //
+CREATE PROCEDURE GetImagesByType(
+    IN p_imageable_type VARCHAR(45)
+)
+BEGIN
+    SELECT * FROM tbl_images
+    WHERE imageable_type = UPPER(p_imageable_type) AND status = 1;
+END //
+DELIMITER ;
+
+-- Procedimiento para eliminar una imagen de forma lógica
+DELIMITER //
+CREATE PROCEDURE DeleteImage(
+    IN p_id_image INT
+)
+BEGIN
+    UPDATE tbl_images
+    SET status = 0 -- Cambiar el estado a inactivo
+    WHERE id_image = p_id_image;
+END //
+DELIMITER ;
+---------------------------------------------------------
+-- Procedimientos almacenados para la tabla tbl_likes----
+---------------------------------------------------------
+
+-- Procedimiento para insertar un nuevo like
+DELIMITER //
+CREATE PROCEDURE InsertLike(
+    IN p_value TINYINT,
+    IN p_likeable_id INT,
+    IN p_likeable_type VARCHAR(45),
+    IN p_user_id INT
+)
+BEGIN
+    INSERT INTO tbl_likes (value, likeable_id, likeable_type, user_id, status, created_at)
+    VALUES (p_value, p_likeable_id, UPPER(p_likeable_type), p_user_id, 1, NOW());
+END //
+DELIMITER ;
+
+-- Procedimiento para actualizar un like existente
+DELIMITER //
+CREATE PROCEDURE UpdateLike(
+    IN p_id_like INT,
+    IN p_value TINYINT,
+    IN p_status TINYINT
+)
+BEGIN
+    UPDATE tbl_likes
+    SET value = p_value,
+        status = p_status
+    WHERE id_like = p_id_like;
+END //
+DELIMITER ;
+
+-- Procedimiento para obtener todos los likes activos
+DELIMITER //
+CREATE PROCEDURE GetAllActiveLikes()
+BEGIN
+    SELECT * FROM tbl_likes
+    WHERE status = 1;
+END //
+DELIMITER ;
+
+-- Procedimiento para buscar likes por tipo de contenido
+DELIMITER //
+CREATE PROCEDURE GetLikesByType(
+    IN p_likeable_type VARCHAR(45)
+)
+BEGIN
+    SELECT * FROM tbl_likes
+    WHERE likeable_type = UPPER(p_likeable_type) AND status = 1;
+END //
+DELIMITER ;
+
+-- Procedimiento para eliminar un like de forma lógica
+DELIMITER //
+CREATE PROCEDURE DeleteLike(
+    IN p_id_like INT
+)
+BEGIN
+    UPDATE tbl_likes
+    SET status = 0 -- Cambiar el estado a inactivo
+    WHERE id_like = p_id_like;
+END //
+DELIMITER ;
