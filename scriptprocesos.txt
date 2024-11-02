@@ -1,180 +1,175 @@
--- Table structure for comments
--- Tabla comments (polimorfica)
--- ----------------------------
-DROP TABLE IF EXISTS `tbl_comments`;
-
-CREATE TABLE `tbl_comments` (
-  `id_comment` INT NOT NULL AUTO_INCREMENT,
-  `content` TEXT COLLATE utf8mb4_general_ci NOT NULL, -- Texto del comentario
-  `commentable_id` INT NOT NULL,
-  `commentable_type` VARCHAR(45) COLLATE utf8mb4_general_ci NOT NULL,
-  `id_user` INT DEFAULT NULL,
-  `status` TINYINT(1) DEFAULT 1, -- Estado del comentario: 1 (activo), 0 (inactivo)
-  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Fecha de creación del comentario
-  PRIMARY KEY (`id_comment`),
+-- TABLE tbl_courses
+DROP TABLE IF EXISTS `tbl_courses`;
+CREATE TABLE `tbl_courses` (
+  `id_course` int NOT NULL AUTO_INCREMENT,
+  `course_title` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `course_subtitle` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `course_description` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `course_status` int DEFAULT NULL,
+  `id_user` int DEFAULT NULL,
+  `id_level` int DEFAULT NULL,
+  `id_category` int DEFAULT NULL,
+  `id_price` int DEFAULT NULL,
+  PRIMARY KEY (`id_course`),
+  KEY `id_level` (`id_level`),
   KEY `id_user` (`id_user`),
-  KEY `commentable` (`commentable_id`, `commentable_type`), -- Índice combinado para mejorar el rendimiento
-  CONSTRAINT `comments_ibfk_1` FOREIGN KEY (`id_user`) REFERENCES `tbl_users` (`id_user`)
+  KEY `id_category` (`id_category`),
+  KEY `id_price` (`id_price`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-
--- --------------------------------------------
--- Records of comments
--- ---------------------------------------------
 BEGIN;
 COMMIT;
 
---::::::::::::::::::::::::::::::
-
--- PROCEDURE tbl_comments
--- PROCEDURE TABLE tbl_comments
-
--- Procedimiento almacenado para insertar un nuevo comentario
+-- PROCEDURE tbl_courses
+-- InsertCourse
 DELIMITER //
-CREATE PROCEDURE InsertComment(
-    IN commentable_id INT,
-    IN commentable_type VARCHAR(45),
-    IN id_user INT,
-    IN content TEXT
+DROP PROCEDURE IF EXISTS InsertCourse;
+CREATE PROCEDURE InsertCourse(
+    IN p_course_title VARCHAR(45),
+    IN p_course_subtitle VARCHAR(45),
+    IN p_course_description VARCHAR(45),
+    IN p_course_status INT,
+    IN p_id_user INT,
+    IN p_id_level INT,
+    IN p_id_category INT,
+    IN p_id_price INT
 )
 BEGIN
-    INSERT INTO comments (commentable_id, commentable_type, id_user, content, created_at, estado)
-    VALUES (commentable_id, commentable_type, id_user, content, NOW(), 1);
+    INSERT INTO tbl_courses (course_title, course_subtitle, course_description, course_status, id_user, id_level, id_category, id_price)
+    VALUES (p_course_title, p_course_subtitle, p_course_description, p_course_status, p_id_user, p_id_level, p_id_category, p_id_price);
 END //
 DELIMITER ;
 
--- Procedimiento almacenado para actualizar un comentario existente
+-- UpdateCourseById
 DELIMITER //
-CREATE PROCEDURE UpdateComment(
-    IN id_comment INT,
-    IN content TEXT,
-    IN estado TINYINT
+DROP PROCEDURE IF EXISTS UpdateCourseById;
+CREATE PROCEDURE UpdateCourseById(
+    IN p_id_course INT,
+    IN p_course_title VARCHAR(45),
+    IN p_course_subtitle VARCHAR(45),
+    IN p_course_description VARCHAR(45),
+    IN p_course_status INT,
+    IN p_id_user INT,
+    IN p_id_level INT,
+    IN p_id_category INT,
+    IN p_id_price INT
 )
 BEGIN
-    UPDATE comments
-    SET content = content,
-        estado = estado
-    WHERE id_comment = id_comment;
+    UPDATE tbl_courses
+    SET course_title = p_course_title,
+        course_subtitle = p_course_subtitle,
+        course_description = p_course_description,
+        course_status = p_course_status,
+        id_user = p_id_user,
+        id_level = p_id_level,
+        id_category = p_id_category,
+        id_price = p_id_price
+    WHERE id_course = p_id_course;
 END //
 DELIMITER ;
 
--- Procedimiento almacenado para obtener todos los comentarios
+-- GetAllCourses
 DELIMITER //
-CREATE PROCEDURE GetAllComments()
+DROP PROCEDURE IF EXISTS GetAllCourses;
+CREATE PROCEDURE GetAllCourses()
 BEGIN
-    SELECT * FROM comments;
+    SELECT id_course, course_title, course_subtitle, course_description, course_status, id_user, id_level, id_category, id_price
+    FROM tbl_courses;
 END //
 DELIMITER ;
 
--- Procedimiento almacenado para buscar comentarios por el contenido
+-- GetCourseById
 DELIMITER //
-CREATE PROCEDURE GetCommentsByContent(
-    IN content VARCHAR(255)
-)
+DROP PROCEDURE IF EXISTS GetCourseById;
+CREATE PROCEDURE GetCourseById(IN p_id_course INT)
 BEGIN
-    SELECT * FROM comments
-    WHERE content LIKE CONCAT('%', content, '%');
+    SELECT id_course, course_title, course_subtitle, course_description, course_status, id_user, id_level, id_category, id_price
+    FROM tbl_courses
+    WHERE id_course = p_id_course;
 END //
 DELIMITER ;
 
--- Procedimiento almacenado para eliminar un comentario de forma lógica
+-- DeleteCourseById
 DELIMITER //
-CREATE PROCEDURE DeleteComment(
-    IN id_comment INT
-)
+DROP PROCEDURE IF EXISTS DeleteCourseById;
+CREATE PROCEDURE DeleteCourseById(IN p_id_course INT)
 BEGIN
-    UPDATE comments
-    SET estado = 0  -- Cambiamos el estado a inactivo
-    WHERE id_comment = id_comment;
+    UPDATE tbl_courses
+    SET course_status = 0  -- Considerando 0 como inactivo
+    WHERE id_course = p_id_course;
 END //
 DELIMITER ;
 
-
--- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
--- ----------------------------
--- Table structure for REVIEWS
--- ----------------------------
-DROP TABLE IF EXISTS `reviews`;
-
-CREATE TABLE `tbl_reviews` (
-  `id_review` INT NOT NULL AUTO_INCREMENT,
-  `comment_review` TEXT COLLATE utf8mb4_general_ci NOT NULL,  -- Texto de la reseña
-  `rating_review` INT NOT NULL,  -- Valor numérico para la calificación
-  `id_user` INT DEFAULT NULL,
-  `course_id` INT DEFAULT NULL,
-  `status` TINYINT(1) DEFAULT 1,  -- Estado de la reseña: 1 (activa), 0 (inactiva)
-  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- Fecha de creación
-  PRIMARY KEY (`id_review`),
-  KEY `id_user` (`id_user`),
-  KEY `course_id` (`course_id`),
-  CONSTRAINT `reviews_ibfk_1` FOREIGN KEY (`id_user`) REFERENCES `tbl_users` (`id_user`),
-  CONSTRAINT `reviews_ibfk_2` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id_course`)
+-- TABLE tbl_goals
+DROP TABLE IF EXISTS `tbl_goals`;
+CREATE TABLE `tbl_goals` (
+  `id_goal` int NOT NULL AUTO_INCREMENT,
+  `goal_name` varchar(34) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `id_course` int NOT NULL,
+  PRIMARY KEY (`id_goal`),
+  KEY `id_course` (`id_course`),
+  CONSTRAINT `tbl_goals_ibfk_1` FOREIGN KEY (`id_course`) REFERENCES `tbl_courses` (`id_course`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+BEGIN;
+COMMIT;
 
--- :::::::::::::::::::::::
-
--- PROCEDURE tbl_comments
--- PROCEDURE TABLE tbl_comments
-
--- Procedimiento para insertar una nueva reseña
-DELIMITER $$
-CREATE PROCEDURE InsertReview(
-    IN comment_review TEXT,
-    IN rating_review INT,
-    IN id_user INT,
-    IN course_id INT
+-- PROCEDURE tbl_goals
+-- InsertGoal
+DELIMITER //
+DROP PROCEDURE IF EXISTS InsertGoal;
+CREATE PROCEDURE InsertGoal(
+    IN p_goal_name VARCHAR(34),
+    IN p_id_course INT
 )
 BEGIN
-    INSERT INTO reviews (comment_review, rating_review, id_user, course_id)
-    VALUES (comment_review, rating_review, id_user, course_id);
-END $$
+    INSERT INTO tbl_goals (goal_name, id_course)
+    VALUES (p_goal_name, p_id_course);
+END //
 DELIMITER ;
 
--- Procedimiento para actualizar una reseña existente
-DELIMITER $$
-CREATE PROCEDURE UpdateReview(
-    IN id_review INT,
-    IN comment_review TEXT,
-    IN rating_review INT,
-    IN estado TINYINT
+-- UpdateGoalById
+DELIMITER //
+DROP PROCEDURE IF EXISTS UpdateGoalById;
+CREATE PROCEDURE UpdateGoalById(
+    IN p_id_goal INT,
+    IN p_goal_name VARCHAR(34),
+    IN p_id_course INT
 )
 BEGIN
-    UPDATE reviews
-    SET comment_review = comment_review,
-        rating_review = rating_review,
-        estado = estado
-    WHERE id_review = id_review;
-END $$
+    UPDATE tbl_goals
+    SET goal_name = p_goal_name,
+        id_course = p_id_course
+    WHERE id_goal = p_id_goal;
+END //
 DELIMITER ;
 
--- Procedimiento para obtener todas las reseñas
-DELIMITER $$
-CREATE PROCEDURE GetAllReviews()
+-- GetAllGoals
+DELIMITER //
+DROP PROCEDURE IF EXISTS GetAllGoals;
+CREATE PROCEDURE GetAllGoals()
 BEGIN
-    SELECT * FROM reviews;
-END $$
+    SELECT id_goal, goal_name, id_course
+    FROM tbl_goals;
+END //
 DELIMITER ;
 
--- Procedimiento para buscar reseñas por comentario
-DELIMITER $$
-CREATE PROCEDURE GetReviewsByComment(
-    IN comment VARCHAR(255)
-)
+-- GetGoalById
+DELIMITER //
+DROP PROCEDURE IF EXISTS GetGoalById;
+CREATE PROCEDURE GetGoalById(IN p_id_goal INT)
 BEGIN
-    SELECT * FROM reviews
-    WHERE comment_review LIKE CONCAT('%', comment, '%');
-END $$
+    SELECT id_goal, goal_name, id_course
+    FROM tbl_goals
+    WHERE id_goal = p_id_goal;
+END //
 DELIMITER ;
 
--- Procedimiento para eliminar una reseña (de forma lógica)
-DELIMITER $$
-CREATE PROCEDURE DeleteReview(
-    IN id_review INT
-)
+-- DeleteGoalById
+DELIMITER //
+DROP PROCEDURE IF EXISTS DeleteGoalById;
+CREATE PROCEDURE DeleteGoalById(IN p_id_goal INT)
 BEGIN
-    UPDATE reviews
-    SET estado = 0 -- Cambiar el estado a inactivo
-    WHERE id_review = id_review;
-END $$
+    DELETE FROM tbl_goals
+    WHERE id_goal = p_id_goal;
+END //
 DELIMITER ;
