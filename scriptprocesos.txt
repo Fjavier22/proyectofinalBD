@@ -386,6 +386,8 @@ END $$
 DELIMITER ;
 
 :::::::::::::::::::::::::::::::::::::::::: JAVIER - ABNER :::::::::::::::::::::::::::::::::
+use db_umg;
+
 -- Eliminamos la tabla users si existe
 DROP TABLE IF EXISTS `users`;
 
@@ -405,9 +407,9 @@ BEGIN;
 COMMIT;
 
 
--- insertUser
-
+-- Insert User
 DELIMITER //
+
 CREATE PROCEDURE InsertUser(
     IN p_name_user VARCHAR(45),
     IN p_email_user VARCHAR(45),
@@ -415,12 +417,13 @@ CREATE PROCEDURE InsertUser(
 )
 BEGIN
     INSERT INTO tbl_users (name_user, email_user, password_user, active)
-    VALUES (p_name_user, p_email_user, p_password_user, TRUE);
+    VALUES (UPPER(p_name_user), UPPER(p_email_user), (p_password_user), TRUE);
 END //
+
 DELIMITER ;
 
 
--- update user 
+-- Update User
 DELIMITER //
 
 CREATE PROCEDURE UpdateUserByName(
@@ -431,47 +434,50 @@ CREATE PROCEDURE UpdateUserByName(
 )
 BEGIN
     UPDATE tbl_users
-    SET email_user = p_email,
-        password_user = p_password,
+    SET email_user = UPPER(p_email), 
+        password_user = UPPER(p_password),  -- Convertir la contraseña a mayúsculas
         active = p_active
-    WHERE name_user = p_name;
+    WHERE UPPER(name_user) COLLATE utf8mb4_general_ci = UPPER(p_name);
 END //
 
 DELIMITER ;
 
 
 
--- GetAllUser 
+
+-- Get All Users
 DELIMITER //
+
 CREATE PROCEDURE GetAllUsers()
 BEGIN
     SELECT name_user, email_user
     FROM tbl_users
     WHERE active = TRUE;
 END //
+
 DELIMITER ;
 
-
 -- Get User By Name
-
 DELIMITER //
+
 CREATE PROCEDURE GetUserByName(IN p_name VARCHAR(45))
 BEGIN
     SELECT name_user, email_user
     FROM tbl_users
-    WHERE name_user LIKE CONCAT('%', p_name, '%') AND active = TRUE;
+    WHERE name_user COLLATE utf8mb4_general_ci LIKE CONCAT('%', p_name, '%') 
+          AND active = TRUE;
 END //
+
 DELIMITER ;
 
-
--- Delete Logic 
+-- Delete User By Name
 DELIMITER //
 
 CREATE PROCEDURE DeleteUserByName(IN p_name VARCHAR(45))
 BEGIN
     UPDATE tbl_users
     SET active = FALSE
-    WHERE name_user = p_name;
+    WHERE name_user COLLATE utf8mb4_general_ci = p_name; -- Se añadió COLLATE para evitar problemas
 END //
 
 DELIMITER ;
@@ -497,20 +503,6 @@ COMMIT;
 
 
 -- :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
--- Eliminamos la tabla courses si existe
-DROP TABLE IF EXISTS `courses`;
-
--- Creamos la tabla courses
-CREATE TABLE `courses` (
-  `id_course` INT NOT NULL AUTO_INCREMENT,
-  `course_name` VARCHAR(100) NOT NULL, -- Nombre del curso
-  `description` TEXT COLLATE utf8mb4_general_ci, -- Descripción del curso
-  `status` TINYINT(1) DEFAULT 1, -- Estado del curso: 1 (activo), 0 (inactivo)
-  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Fecha de creación del curso
-  PRIMARY KEY (`id_course`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
-
 -- Table structure for comments
 -- Tabla comments (polimorfica)
 -- ----------------------------
@@ -551,8 +543,8 @@ CREATE PROCEDURE InsertComment(
     IN content TEXT
 )
 BEGIN
-    INSERT INTO comments (commentable_id, commentable_type, id_user, content, created_at, estado)
-    VALUES (commentable_id, commentable_type, id_user, content, NOW(), 1);
+    INSERT INTO comments (commentable_id, commentable_type, id_user, content, created_at, status)
+    VALUES (commentable_id, commentable_type, id_user, UPPER(content), NOW(), 1);
 END //
 DELIMITER ;
 
@@ -561,13 +553,13 @@ DELIMITER //
 CREATE PROCEDURE UpdateComment(
     IN id_comment INT,
     IN content TEXT,
-    IN estado TINYINT
+    IN status TINYINT
 )
 BEGIN
     UPDATE comments
-    SET content = content,
-        estado = estado
-    WHERE id_comment = id_comment;
+    SET content = UPPER(content),  -- Convertir el contenido a mayúsculas
+        status = status
+    WHERE id_comment = id_comment;  -- Asegúrate de que el nombre sea correcto
 END //
 DELIMITER ;
 
@@ -586,7 +578,7 @@ CREATE PROCEDURE GetCommentsByContent(
 )
 BEGIN
     SELECT * FROM comments
-    WHERE content LIKE CONCAT('%', content, '%');
+    WHERE content LIKE CONCAT('%', UPPER(content), '%');  -- Convertir a mayúsculas para la búsqueda
 END //
 DELIMITER ;
 
@@ -597,10 +589,11 @@ CREATE PROCEDURE DeleteComment(
 )
 BEGIN
     UPDATE comments
-    SET estado = 0  -- Cambiamos el estado a inactivo
-    WHERE id_comment = id_comment;
+    SET status = 0  -- Cambiamos el estado a inactivo
+    WHERE id_comment = id_comment;  -- Asegúrate de que el nombre sea correcto
 END //
 DELIMITER ;
+
 
 
 -- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -640,8 +633,9 @@ CREATE PROCEDURE InsertReview(
 )
 BEGIN
     INSERT INTO reviews (comment_review, rating_review, id_user, course_id)
-    VALUES (comment_review, rating_review, id_user, course_id);
+    VALUES (UPPER(comment_review), rating_review, id_user, course_id);  -- Convertir a mayúsculas
 END $$
+
 DELIMITER ;
 
 -- Procedimiento para actualizar una reseña existente
@@ -654,11 +648,12 @@ CREATE PROCEDURE UpdateReview(
 )
 BEGIN
     UPDATE reviews
-    SET comment_review = comment_review,
+    SET comment_review = UPPER(comment_review),  -- Convertir a mayúsculas
         rating_review = rating_review,
         estado = estado
-    WHERE id_review = id_review;
+    WHERE id_review = id_review;  -- Asegúrate de que el nombre sea correcto
 END $$
+
 DELIMITER ;
 
 -- Procedimiento para obtener todas las reseñas
@@ -667,6 +662,7 @@ CREATE PROCEDURE GetAllReviews()
 BEGIN
     SELECT * FROM reviews;
 END $$
+
 DELIMITER ;
 
 -- Procedimiento para buscar reseñas por comentario
@@ -676,8 +672,9 @@ CREATE PROCEDURE GetReviewsByComment(
 )
 BEGIN
     SELECT * FROM reviews
-    WHERE comment_review LIKE CONCAT('%', comment, '%');
+    WHERE comment_review LIKE CONCAT('%', UPPER(comment), '%');  -- Convertir a mayúsculas para la búsqueda
 END $$
+
 DELIMITER ;
 
 -- Procedimiento para eliminar una reseña (de forma lógica)
@@ -688,8 +685,9 @@ CREATE PROCEDURE DeleteReview(
 BEGIN
     UPDATE reviews
     SET estado = 0 -- Cambiar el estado a inactivo
-    WHERE id_review = id_review;
+    WHERE id_review = id_review;  -- Asegúrate de que el nombre sea correcto
 END $$
+
 DELIMITER ;
 
 
