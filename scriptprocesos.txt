@@ -100,6 +100,80 @@ BEGIN
 END //
 DELIMITER ;
 
+
+:::::::TABLE DESCRIPTION::::::::
+-- Eliminamos la tabla descriptions si existe
+DROP TABLE IF EXISTS `Tbl_Descriptions`;
+
+-- Creamos la tabla Tbl_Descriptions
+CREATE TABLE `Tbl_Descriptions` (
+  `id_description` INT NOT NULL AUTO_INCREMENT,
+  `name_description` VARCHAR(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `lesson_id` INT DEFAULT NULL,
+  PRIMARY KEY (`id_description`),
+  KEY `lkesson_id` (`lesson_id`),
+  CONSTRAINT `lkesson_id` FOREIGN KEY (`lesson_id`) REFERENCES `lessons` (`id_lesson`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Records of Tbl_Descriptions
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+DELIMITER $$
+CREATE PROCEDURE InsertDescription(
+    IN p_name_description VARCHAR(45),
+    IN p_lesson_id INT
+)
+BEGIN
+    INSERT INTO Tbl_Descriptions (name_description, lesson_id)
+    VALUES (p_name_description, p_lesson_id);
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE UpdateDescription(
+    IN p_id_description INT,
+    IN p_name_description VARCHAR(45),
+    IN p_lesson_id INT
+)
+BEGIN
+    UPDATE Tbl_Descriptions
+    SET name_description = p_name_description,
+        lesson_id = p_lesson_id
+    WHERE id_description = p_id_description;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE GetAllDescriptions()
+BEGIN
+    SELECT * FROM Tbl_Descriptions;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE GetDescriptionsByName(
+    IN p_name_description VARCHAR(45)
+)
+BEGIN
+    SELECT * FROM Tbl_Descriptions
+    WHERE name_description LIKE CONCAT('%', p_name_description, '%');
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE DeleteDescription(
+    IN p_id_description INT
+)
+BEGIN
+    UPDATE Tbl_Descriptions
+    SET name_description = NULL -- O podrías usar un campo de estado si se necesita
+    WHERE id_description = p_id_description;
+END $$
+DELIMITER ;
+
 -- TABLE tbl_goals
 DROP TABLE IF EXISTS `tbl_goals`;
 CREATE TABLE `tbl_goals` (
