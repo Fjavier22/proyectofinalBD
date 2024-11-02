@@ -3,7 +3,7 @@
 
 -- Table structure for comments
 -- Tabla comments (polimorfica)
--- --------------------------------------
+-- ----------------------------
 DROP TABLE IF EXISTS `tbl_comments`;
 
 CREATE TABLE `tbl_comments` (
@@ -11,13 +11,13 @@ CREATE TABLE `tbl_comments` (
   `content` TEXT COLLATE utf8mb4_general_ci NOT NULL, -- Texto del comentario
   `commentable_id` INT NOT NULL,
   `commentable_type` VARCHAR(45) COLLATE utf8mb4_general_ci NOT NULL,
-  `user_id` INT DEFAULT NULL,
-  `estado` TINYINT(1) DEFAULT 1, -- Estado del comentario: 1 (activo), 0 (inactivo)
+  `id_user` INT DEFAULT NULL,
+  `status` TINYINT(1) DEFAULT 1, -- Estado del comentario: 1 (activo), 0 (inactivo)
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Fecha de creación del comentario
   PRIMARY KEY (`id_comment`),
-  KEY `user_id` (`user_id`),
+  KEY `id_user` (`id_user`),
   KEY `commentable` (`commentable_id`, `commentable_type`), -- Índice combinado para mejorar el rendimiento
-  CONSTRAINT `comments_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id_user`)
+  CONSTRAINT `comments_ibfk_1` FOREIGN KEY (`id_user`) REFERENCES `tbl_users` (`id_user`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 
@@ -37,12 +37,12 @@ DELIMITER //
 CREATE PROCEDURE InsertComment(
     IN commentable_id INT,
     IN commentable_type VARCHAR(45),
-    IN user_id INT,
+    IN id_user INT,
     IN content TEXT
 )
 BEGIN
-    INSERT INTO comments (commentable_id, commentable_type, user_id, content, created_at, estado)
-    VALUES (commentable_id, commentable_type, user_id, content, NOW(), 1);
+    INSERT INTO comments (commentable_id, commentable_type, id_user, content, created_at, estado)
+    VALUES (commentable_id, commentable_type, id_user, content, NOW(), 1);
 END //
 DELIMITER ;
 
@@ -100,18 +100,18 @@ DELIMITER ;
 -- ----------------------------
 DROP TABLE IF EXISTS `reviews`;
 
-CREATE TABLE `reviews` (
+CREATE TABLE `tbl_reviews` (
   `id_review` INT NOT NULL AUTO_INCREMENT,
   `comment_review` TEXT COLLATE utf8mb4_general_ci NOT NULL,  -- Texto de la reseña
   `rating_review` INT NOT NULL,  -- Valor numérico para la calificación
-  `user_id` INT DEFAULT NULL,
+  `id_user` INT DEFAULT NULL,
   `course_id` INT DEFAULT NULL,
-  `estado` TINYINT(1) DEFAULT 1,  -- Estado de la reseña: 1 (activa), 0 (inactiva)
+  `status` TINYINT(1) DEFAULT 1,  -- Estado de la reseña: 1 (activa), 0 (inactiva)
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- Fecha de creación
   PRIMARY KEY (`id_review`),
-  KEY `user_id` (`user_id`),
+  KEY `id_user` (`id_user`),
   KEY `course_id` (`course_id`),
-  CONSTRAINT `reviews_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id_user`),
+  CONSTRAINT `reviews_ibfk_1` FOREIGN KEY (`id_user`) REFERENCES `tbl_users` (`id_user`),
   CONSTRAINT `reviews_ibfk_2` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id_course`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -125,12 +125,12 @@ DELIMITER $$
 CREATE PROCEDURE InsertReview(
     IN comment_review TEXT,
     IN rating_review INT,
-    IN user_id INT,
+    IN id_user INT,
     IN course_id INT
 )
 BEGIN
-    INSERT INTO reviews (comment_review, rating_review, user_id, course_id)
-    VALUES (comment_review, rating_review, user_id, course_id);
+    INSERT INTO reviews (comment_review, rating_review, id_user, course_id)
+    VALUES (comment_review, rating_review, id_user, course_id);
 END $$
 DELIMITER ;
 
@@ -181,7 +181,3 @@ BEGIN
     WHERE id_review = id_review;
 END $$
 DELIMITER ;
-
-
-
-
