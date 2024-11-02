@@ -386,8 +386,6 @@ END $$
 DELIMITER ;
 
 :::::::::::::::::::::::::::::::::::::::::: JAVIER - ABNER :::::::::::::::::::::::::::::::::
-use db_umg;
-
 -- Eliminamos la tabla users si existe
 DROP TABLE IF EXISTS `users`;
 
@@ -537,29 +535,29 @@ COMMIT;
 -- Procedimiento almacenado para insertar un nuevo comentario
 DELIMITER //
 CREATE PROCEDURE InsertComment(
-    IN commentable_id INT,
-    IN commentable_type VARCHAR(45),
-    IN id_user INT,
-    IN content TEXT
+    IN p_commentable_id INT,
+    IN p_commentable_type VARCHAR(45),
+    IN p_id_user INT,
+    IN p_content TEXT
 )
 BEGIN
     INSERT INTO tbl_comments (commentable_id, commentable_type, id_user, content, created_at, status)
-    VALUES (commentable_id, commentable_type, id_user, UPPER(content), NOW(), 1);
+    VALUES (p_commentable_id, p_commentable_type, p_id_user, UPPER(p_content), NOW(), 1);
 END //
 DELIMITER ;
 
 -- Procedimiento almacenado para actualizar un comentario existente
 DELIMITER //
 CREATE PROCEDURE UpdateComment(
-    IN id_comment INT,
-    IN content TEXT,
-    IN status TINYINT
+    IN p_id_comment INT,
+    IN p_content TEXT,
+    IN p_status TINYINT
 )
 BEGIN
     UPDATE tbl_comments
-    SET content = UPPER(content),  -- Convertir el contenido a mayúsculas
-        status = status
-    WHERE id_comment = id_comment;  -- Asegúrate de que el nombre sea correcto
+    SET content = UPPER(p_content),  -- Convertir el contenido a mayúsculas
+        status = p_status
+    WHERE id_comment = p_id_comment;  -- Asegúrate de que el nombre sea correcto
 END //
 DELIMITER ;
 
@@ -574,23 +572,23 @@ DELIMITER ;
 -- Procedimiento almacenado para buscar comentarios por el contenido
 DELIMITER //
 CREATE PROCEDURE GetCommentsByContent(
-    IN content VARCHAR(255)
+    IN p_content VARCHAR(255)
 )
 BEGIN
     SELECT * FROM tbl_comments
-    WHERE content LIKE CONCAT('%', UPPER(content), '%');  -- Convertir a mayúsculas para la búsqueda
+    WHERE content LIKE CONCAT('%', UPPER(p_content), '%');  -- Convertir a mayúsculas para la búsqueda
 END //
 DELIMITER ;
 
 -- Procedimiento almacenado para eliminar un comentario de forma lógica
 DELIMITER //
 CREATE PROCEDURE DeleteComment(
-    IN id_comment INT
+    IN p_id_comment INT
 )
 BEGIN
     UPDATE tbl_comments
     SET status = 0  -- Cambiamos el estado a inactivo
-    WHERE id_comment = id_comment;  -- Asegúrate de que el nombre sea correcto
+    WHERE id_comment = p_id_comment;  -- Asegúrate de que el nombre sea correcto
 END //
 DELIMITER ;
 
@@ -626,14 +624,14 @@ CREATE TABLE `tbl_reviews` (
 -- Procedimiento para insertar una nueva reseña
 DELIMITER $$
 CREATE PROCEDURE InsertReview(
-    IN comment_review TEXT,
-    IN rating_review INT,
-    IN id_user INT,
-    IN course_id INT
+    IN p_comment_review TEXT,
+    IN p_rating_review INT,
+    IN p_id_user INT,
+    IN p_course_id INT
 )
 BEGIN
     INSERT INTO tbl_reviews (comment_review, rating_review, id_user, course_id)
-    VALUES (UPPER(comment_review), rating_review, id_user, course_id);  -- Convertir a mayúsculas
+    VALUES (UPPER(p_comment_review), p_rating_review, p_id_user, p_course_id);  -- Convertir a mayúsculas
 END $$
 
 DELIMITER ;
@@ -641,17 +639,17 @@ DELIMITER ;
 -- Procedimiento para actualizar una reseña existente
 DELIMITER $$
 CREATE PROCEDURE UpdateReview(
-    IN id_review INT,
-    IN comment_review TEXT,
-    IN rating_review INT,
-    IN estado TINYINT
+    IN p_id_review INT,
+    IN p_comment_review TEXT,
+    IN p_rating_review INT,
+    IN p_status TINYINT
 )
 BEGIN
     UPDATE tbl_reviews
-    SET comment_review = UPPER(comment_review),  -- Convertir a mayúsculas
-        rating_review = rating_review,
-        estado = estado
-    WHERE id_review = id_review;  -- Asegúrate de que el nombre sea correcto
+    SET comment_review = UPPER(p_comment_review),  -- Convertir a mayúsculas
+        rating_review = p_rating_review,
+        status = p_status 
+    WHERE id_review = p_id_review;  -- Asegúrate de que el nombre sea correcto
 END $$
 
 DELIMITER ;
@@ -668,11 +666,11 @@ DELIMITER ;
 -- Procedimiento para buscar reseñas por comentario
 DELIMITER $$
 CREATE PROCEDURE GetReviewsByComment(
-    IN comment VARCHAR(255)
+    IN p_comment VARCHAR(255)
 )
 BEGIN
     SELECT * FROM tbl_reviews
-    WHERE comment_review LIKE CONCAT('%', UPPER(comment), '%');  -- Convertir a mayúsculas para la búsqueda
+    WHERE comment_review LIKE CONCAT('%', UPPER(p_comment), '%');  -- Convertir a mayúsculas para la búsqueda
 END $$
 
 DELIMITER ;
@@ -680,12 +678,12 @@ DELIMITER ;
 -- Procedimiento para eliminar una reseña (de forma lógica)
 DELIMITER $$
 CREATE PROCEDURE DeleteReview(
-    IN id_review INT
+    IN p_id_review INT
 )
 BEGIN
     UPDATE tbl_reviews
-    SET estado = 0 -- Cambiar el estado a inactivo
-    WHERE id_review = id_review;  -- Asegúrate de que el nombre sea correcto
+    SET status = 0  -- Cambiar el estado a inactivo
+    WHERE id_review = p_id_review;  -- Asegúrate de que el nombre sea correcto
 END $$
 
 DELIMITER ;
