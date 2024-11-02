@@ -129,3 +129,124 @@ BEGIN
     WHERE id_like = p_id_like;
 END //
 DELIMITER ;
+
+
+
+
+----------------------------------------------------------
+-- Procedimientos almacenados para la tabla tbl_platfomrs----
+----------------------------------------------------------
+-- Insert Platform
+DELIMITER //
+CREATE PROCEDURE InsertPlatform(
+    IN p_name_platform VARCHAR(100)
+)
+BEGIN
+    INSERT INTO tbl_platforms (name_platform) VALUES (p_name_platform);
+END //
+DELIMITER ;
+
+-- Update Platform by ID
+DELIMITER //
+CREATE PROCEDURE UpdatePlatformById(
+    IN p_id_platform INT,
+    IN p_name_platform VARCHAR(100),
+    IN p_status TINYINT(1)
+)
+BEGIN
+    UPDATE tbl_platforms
+    SET name_platform = p_name_platform, status = p_status
+    WHERE id_platform = p_id_platform;
+END //
+DELIMITER ;
+
+-- Get All Platforms
+DELIMITER //
+CREATE PROCEDURE GetAllPlatforms()
+BEGIN
+    SELECT * FROM tbl_platforms WHERE status = 1;
+END //
+DELIMITER ;
+
+-- Get Platform by ID
+DELIMITER //
+CREATE PROCEDURE GetPlatformById(IN p_id_platform INT)
+BEGIN
+    SELECT * FROM tbl_platforms WHERE id_platform = p_id_platform AND status = 1;
+END //
+DELIMITER ;
+
+-- Delete Logic (Soft Delete) by ID
+DELIMITER //
+CREATE PROCEDURE DeletePlatformById(IN p_id_platform INT)
+BEGIN
+    UPDATE tbl_platforms
+    SET status = 0
+    WHERE id_platform = p_id_platform;
+END //
+DELIMITER ;
+
+
+
+
+
+
+
+
+
+
+
+----------------------------------------------------------
+-- Procedimientos almacenados para la tabla tbl_lesson_user----
+----------------------------------------------------------
+
+
+
+-- Insert Lesson_User
+DELIMITER //
+CREATE PROCEDURE InsertLessonUser(
+    IN p_id_user INT,
+    IN p_id_lesson INT
+)
+BEGIN
+    INSERT INTO tbl_lesson_user (id_user, id_lesson) VALUES (p_id_user, p_id_lesson);
+END //
+DELIMITER ;
+
+-- Update Lesson_User by ID
+DELIMITER //
+CREATE PROCEDURE UpdateLessonUserById(
+    IN p_id_lesson_user INT,
+    IN p_id_user INT,
+    IN p_id_lesson INT
+)
+BEGIN
+    UPDATE tbl_lesson_user
+    SET id_user = p_id_user, id_lesson = p_id_lesson
+    WHERE id_lesson_user = p_id_lesson_user;
+END //
+DELIMITER ;
+
+-- Get All Lesson_Users
+DELIMITER //
+CREATE PROCEDURE GetAllLessonUsers()
+BEGIN
+    SELECT * FROM tbl_lesson_user;
+END //
+DELIMITER ;
+
+-- Get Lesson_User by ID
+DELIMITER //
+CREATE PROCEDURE GetLessonUserById(IN p_id_lesson_user INT)
+BEGIN
+    SELECT * FROM tbl_lesson_user WHERE id_lesson_user = p_id_lesson_user;
+END //
+DELIMITER ;
+
+-- Delete Lesson_User by ID
+DELIMITER //
+CREATE PROCEDURE DeleteLessonUserById(IN p_id_lesson_user INT)
+BEGIN
+    DELETE FROM tbl_lesson_user WHERE id_lesson_user = p_id_lesson_user;
+END //
+DELIMITER ;
