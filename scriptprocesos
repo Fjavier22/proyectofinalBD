@@ -1,26 +1,19 @@
 CREATE DATABASE OnlineEducationPlatform;
 USE OnlineEducationPlatform;
 
-CREATE TABLE MainCategory (
+CREATE TABLE Tbl_MainCategory (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL UNIQUE
+    name VARCHAR(100) NOT NULL UNIQUE,
+    description TEXT,
+    image_url VARCHAR(255),
+    is_active BOOLEAN DEFAULT TRUE
 );
 
-CREATE TABLE Subcategory (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    main_category_id INT NOT NULL,
-    name VARCHAR(100) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (main_category_id) REFERENCES MainCategory(id)
-);
-
-
-CREATE TABLE Course (
+CREATE TABLE Tbl_Course (
     id INT AUTO_INCREMENT PRIMARY KEY,
     subcategory_id INT NOT NULL,
     name VARCHAR(200) NOT NULL,
     description TEXT,
-    
     price DECIMAL(10, 2) NOT NULL,
     educational_area VARCHAR(100),
     difficulty_level ENUM('Beginner', 'Intermediate', 'Advanced') NOT NULL,
@@ -33,21 +26,212 @@ CREATE TABLE Course (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     thumbnail_url VARCHAR(255),
-    
-    FOREIGN KEY (subcategory_id) REFERENCES Subcategory(id)
+    is_active BOOLEAN DEFAULT TRUE,
+    FOREIGN KEY (subcategory_id) REFERENCES Tbl_Subcategory(id)
 );
 
-CREATE TABLE Instructor (
+CREATE TABLE Tbl_Instructor (
     id INT AUTO_INCREMENT PRIMARY KEY,
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
-    specialty VARCHAR(100)
+    specialty VARCHAR(100),
+    bio TEXT,
+    experience_years INT NOT NULL,
+    rating DECIMAL(3, 2),
+    profile_picture_url VARCHAR(255),
+    website_url VARCHAR(255),
+    skills TEXT,
+    social_media_links JSON,
+    is_active BOOLEAN DEFAULT TRUE
 );
 
-CREATE TABLE CourseInstructor (
+CREATE TABLE Tbl_CourseInstructor (
     id INT AUTO_INCREMENT PRIMARY KEY,
     course_id INT NOT NULL,
     instructor_id INT NOT NULL,
-    FOREIGN KEY (course_id) REFERENCES Course(id),
-    FOREIGN KEY (instructor_id) REFERENCES Instructor(id)
+    role VARCHAR(50) NOT NULL DEFAULT 'Instructor',
+    collaboration_start TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (course_id) REFERENCES Tbl_Course(id),
+    FOREIGN KEY (instructor_id) REFERENCES Tbl_Instructor(id)
 );
+
+CREATE TABLE Tbl_Subcategory (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    main_category_id INT NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_active BOOLEAN DEFAULT TRUE,
+    FOREIGN KEY (main_category_id) REFERENCES Tbl_MainCategory(id)
+);
+
+
+DELIMITER //
+
+CREATE PROCEDURE InsertMainCategory(
+    IN category_name VARCHAR(100),
+    IN category_description TEXT,
+    IN category_image_url VARCHAR(255)
+)
+BEGIN
+    INSERT INTO Tbl_MainCategory (name, description, image_url)
+    VALUES (category_name, category_description, category_image_url);
+END //
+
+DELIMITER ;
+
+DELIMITER //
+
+CREATE PROCEDURE UpdateMainCategory(
+    IN category_id INT,
+    IN new_name VARCHAR(100),
+    IN new_description TEXT,
+    IN new_image_url VARCHAR(255)
+)
+BEGIN
+    UPDATE Tbl_MainCategory
+    SET name = new_name, description = new_description, image_url = new_image_url
+    WHERE id = category_id;
+END //
+
+DELIMITER ;
+
+DELIMITER //
+
+CREATE PROCEDURE DeactivateMainCategory(IN category_id INT)
+BEGIN
+    UPDATE Tbl_MainCategory
+    SET is_active = FALSE
+    WHERE id = category_id;
+END //
+
+DELIMITER ;
+
+DELIMITER //
+
+CREATE PROCEDURE GetAllMainCategories()
+BEGIN
+    SELECT * FROM Tbl_MainCategory WHERE is_active = TRUE;
+END //
+
+DELIMITER ;
+
+DELIMITER //
+
+CREATE PROCEDURE InsertSubcategory(
+    IN main_category_id INT,
+    IN subcategory_name VARCHAR(100),
+    IN subcategory_description TEXT
+)
+BEGIN
+    INSERT INTO Tbl_Subcategory (main_category_id, name, description)
+    VALUES (main_category_id, subcategory_name, subcategory_description);
+END //
+
+DELIMITER ;
+
+DELIMITER //
+
+CREATE PROCEDURE DeactivateSubcategory(IN subcategory_id INT)
+BEGIN
+    UPDATE Tbl_Subcategory
+    SET is_active = FALSE
+    WHERE id = subcategory_id;
+END //
+
+DELIMITER ;
+
+DELIMITER //
+
+CREATE PROCEDURE GetAllSubcategories()
+BEGIN
+    SELECT * FROM Tbl_Subcategory WHERE is_active = TRUE;
+END //
+
+DELIMITER ;
+
+//procedimientos
+DELIMITER //
+
+CREATE PROCEDURE InsertCourse(
+    IN subcategory_id INT,
+    IN course_name VARCHAR(200),
+    IN course_description TEXT,
+    IN course_price DECIMAL(10, 2),
+    IN educational_area VARCHAR(100),
+    IN difficulty_level ENUM('Beginner', 'Intermediate', 'Advanced'),
+    IN language VARCHAR(50),
+    IN duration_hours INT,
+    IN includes_certificate BOOLEAN,
+    IN prerequisites TEXT,
+    IN thumbnail_url VARCHAR(255)
+)
+BEGIN
+    INSERT INTO Tbl_Course (subcategory_id, name, description, price, educational_area, difficulty_level, language, duration_hours, includes_certificate, prerequisites, thumbnail_url)
+    VALUES (subcategory_id, course_name, course_description, course_price, educational_area, difficulty_level, language, duration_hours, includes_certificate, prerequisites, thumbnail_url);
+END //
+
+DELIMITER ;
+
+DELIMITER //
+
+CREATE PROCEDURE DeactivateCourse(IN course_id INT)
+BEGIN
+    UPDATE Tbl_Course
+    SET is_active = FALSE
+    WHERE id = course_id;
+END //
+
+DELIMITER ;
+
+DELIMITER //
+
+CREATE PROCEDURE GetAllCourses()
+BEGIN
+    SELECT * FROM Tbl_Course WHERE is_active = TRUE;
+END //
+
+DELIMITER ;
+
+//procedimientos tbl_instructor
+DELIMITER //
+
+CREATE PROCEDURE InsertInstructor(
+    IN first_name VARCHAR(100),
+    IN last_name VARCHAR(100),
+    IN specialty VARCHAR(100),
+    IN bio TEXT,
+    IN experience_years INT,
+    IN rating DECIMAL(3, 2),
+    IN profile_picture_url VARCHAR(255),
+    IN website_url VARCHAR(255),
+    IN skills TEXT,
+    IN social_media_links JSON
+)
+BEGIN
+    INSERT INTO Tbl_Instructor (first_name, last_name, specialty, bio, experience_years, rating, profile_picture_url, website_url, skills, social_media_links)
+    VALUES (first_name, last_name, specialty, bio, experience_years, rating, profile_picture_url, website_url, skills, social_media_links);
+END //
+
+DELIMITER ;
+
+DELIMITER //
+
+CREATE PROCEDURE DeactivateInstructor(IN instructor_id INT)
+BEGIN
+    UPDATE Tbl_Instructor
+    SET is_active = FALSE
+    WHERE id = instructor_id;
+END //
+
+DELIMITER ;
+
+DELIMITER //
+
+CREATE PROCEDURE GetAllInstructors()
+BEGIN
+    SELECT * FROM Tbl_Instructor WHERE is_active = TRUE;
+END //
+
+DELIMITER ;
+
