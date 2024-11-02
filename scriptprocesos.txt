@@ -482,6 +482,183 @@ END $$
 DELIMITER ;
 
 
+:::::::::::::::::::::TABLA DE REQUIREMENTS ::::::::::::::::::::::
 
+USE db_umg;
 
+-- Eliminamos la tabla tbl_requirements si existe
+DROP TABLE IF EXISTS `tbl_requirements`;
 
+-- Creamos la tabla tbl_requirements
+CREATE TABLE `tbl_requirements` (
+  `id_requirement` INT NOT NULL AUTO_INCREMENT,
+  `name_requirement` VARCHAR(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `course_id` INT NOT NULL,
+  PRIMARY KEY (`id_requirement`),
+  KEY `course_id` (`course_id`),
+  CONSTRAINT `requirements_ibfk_1` FOREIGN KEY (`course_id`) REFERENCES `tbl_courses` (`id_course`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Records of tbl_requirements
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+::::::::::::::::::::PROCEDIMIENTOS ALMACENADOS ::::::::::::::::::::::::::
+::::::::InsertRequirement::::::::::::::::::::::::
+DELIMITER $$
+CREATE PROCEDURE InsertRequirement(
+    IN p_name_requirement VARCHAR(45),
+    IN p_course_id INT
+)
+BEGIN
+    INSERT INTO tbl_requirements (name_requirement, course_id)
+    VALUES (p_name_requirement, p_course_id);
+END $$
+DELIMITER ;
+
+:::::::::UpdateRequirement::::::::::::::::::
+DELIMITER $$
+CREATE PROCEDURE UpdateRequirement(
+    IN p_id_requirement INT,
+    IN p_name_requirement VARCHAR(45),
+    IN p_course_id INT
+)
+BEGIN
+    UPDATE tbl_requirements
+    SET name_requirement = p_name_requirement,
+        course_id = p_course_id
+    WHERE id_requirement = p_id_requirement;
+END $$
+DELIMITER ;
+
+::::::::::GetAllRequirements:::::::::::::::::
+DELIMITER $$
+CREATE PROCEDURE GetAllRequirements()
+BEGIN
+    SELECT * FROM tbl_requirements;
+END $$
+DELIMITER ;
+
+::::::::::GetRequirementsByName:::::::::::::::
+DELIMITER $$
+CREATE PROCEDURE GetRequirementsByName(
+    IN p_name_requirement VARCHAR(45)
+)
+BEGIN
+    SELECT * FROM tbl_requirements
+    WHERE name_requirement LIKE CONCAT('%', p_name_requirement, '%');
+END $$
+DELIMITER ;
+
+::::::::::DeleteRequirement::::::::::::::::
+DELIMITER $$
+CREATE PROCEDURE DeleteRequirement(
+    IN p_id_requirement INT
+)
+BEGIN
+    UPDATE tbl_requirements
+    SET active = FALSE
+    WHERE id_requirement = p_id_requirement;
+END $$
+DELIMITER ;
+:::::::::::::::::::::::::::::::::::::::::::
+
+::::::::::::::::::::::::TABLA DE PRICES :::::::::::::::::::::::::::::::::
+
+-- Eliminamos la tabla prices si existe
+DROP TABLE IF EXISTS `Tbl_Prices`;
+
+-- Creamos la tabla Tbl_Prices
+CREATE TABLE `Tbl_Prices` (
+  `id_price` INT NOT NULL AUTO_INCREMENT,
+  `amount_price` DECIMAL(10,2) DEFAULT NULL,
+  `status` TINYINT(1) DEFAULT 1, -- Estado del precio: 1 (activo), 0 (inactivo)
+  PRIMARY KEY (`id_price`),
+  CONSTRAINT `price_id` FOREIGN KEY (`id_price`) REFERENCES `courses` (`id_course`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+:::::::::InsertPrice::::::::::::::::
+
+DELIMITER $$
+CREATE PROCEDURE InsertPrice(
+    IN p_amount_price DECIMAL(10,2)
+)
+BEGIN
+    INSERT INTO Tbl_Prices (amount_price, status)
+    VALUES (p_amount_price, 1);
+END $$
+DELIMITER ;
+
+::::::::::UpdatePrice::::::::::::::
+DELIMITER $$
+CREATE PROCEDURE UpdatePrice(
+    IN p_id_price INT,
+    IN p_amount_price DECIMAL(10,2),
+    IN p_status TINYINT
+)
+BEGIN
+    UPDATE Tbl_Prices
+    SET amount_price = p_amount_price,
+        status = p_status
+    WHERE id_price = p_id_price;
+END $$
+DELIMITER ;
+
+::::::::::GetAllPrices::::::::::::::
+DELIMITER $$
+CREATE PROCEDURE GetAllPrices()
+BEGIN
+    SELECT * FROM Tbl_Prices
+    WHERE status = 1;
+END $$
+DELIMITER ;
+::::::::::::::::::::::::::::::::::::
+
+:::::::GetPricesByAmount::::::::::::
+DELIMITER $$
+CREATE PROCEDURE GetPricesByAmount(
+    IN p_amount DECIMAL(10,2)
+)
+BEGIN
+    SELECT * FROM Tbl_Prices
+    WHERE amount_price = p_amount AND status = 1;
+END $$
+DELIMITER ;
+:::::::::::::::::::::::::::::::::::
+
+:::::::::DeletePrices::::::::::::::
+DELIMITER $$
+CREATE PROCEDURE DeletePrice(
+    IN p_id_price INT
+)
+BEGIN
+    UPDATE Tbl_Prices
+    SET status = 0 -- Cambiamos el estado a inactivo
+    WHERE id_price = p_id_price;
+END $$
+DELIMITER ;
+:::::::::::::::::::::::::::::::::::
+
+:::::::::Ejemplos de insersion de datos::::::::::::::
+-- Insertamos un precio de ejemplo
+CALL InsertPrice(150.00);
+
+-- Actualizamos un precio existente (ejemplo con id 1)
+CALL UpdatePrice(1, 175.00, 1);
+
+-- Obtenemos todos los precios activos
+CALL GetAllPrices();
+
+-- Buscamos precios por monto específico (ejemplo 150.00)
+CALL GetPricesByAmount(150.00);
+
+-- Eliminamos un precio de forma lógica (ejemplo con id 1)
+CALL DeletePrice(1);
+
+:::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+aqui comienza el otro
