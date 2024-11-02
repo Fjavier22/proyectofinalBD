@@ -17,4 +17,33 @@ CREATE TABLE `lesson_descriptions` (
   CONSTRAINT `fk_description` FOREIGN KEY (`description_id`) REFERENCES `descriptions` (`id_description`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+DROP TABLE IF EXISTS `sections`;
+CREATE TABLE `sections` (
+  `id_section` int NOT NULL AUTO_INCREMENT,
+  `name_section` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  PRIMARY KEY (`id_section`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+DROP TABLE IF EXISTS `platforms`;
+CREATE TABLE `platforms` (
+  `id_platform` int NOT NULL AUTO_INCREMENT,
+  `name_platform` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  PRIMARY KEY (`id_platform`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+DROP TABLE IF EXISTS `lessons`;
+CREATE TABLE `lessons` (
+  `id_lesson` int NOT NULL AUTO_INCREMENT,
+  `name_lesson` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `url_lesson` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `iframe_lesson` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `section_id` int DEFAULT NULL,
+  `platform_id` int DEFAULT NULL,
+  PRIMARY KEY (`id_lesson`),
+  KEY `platform_id` (`platform_id`),
+  KEY `section_id` (`section_id`),
+  CONSTRAINT `fk_section` FOREIGN KEY (`section_id`) REFERENCES `sections` (`id_section`),
+  CONSTRAINT `fk_platform` FOREIGN KEY (`platform_id`) REFERENCES `platforms` (`id_platform`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
