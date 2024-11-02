@@ -1,20 +1,20 @@
-CREATE TABLE Platforms (
-    Platform_ID INT AUTO_INCREMENT PRIMARY KEY,
-    Platform_Name VARCHAR(255) NOT NULL,
-    Platform_URL VARCHAR(255) NOT NULL,
-    Platform_Type VARCHAR(100),
-    Status VARCHAR(20) NOT NULL  
-);
+DROP TABLE IF EXISTS `descriptions`;
+CREATE TABLE `descriptions` (
+  `id_description` int NOT NULL AUTO_INCREMENT,
+  `description_text` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  PRIMARY KEY (`id_description`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Tabla de lecciones de usuarios
-CREATE TABLE Lesson_Users (
-    Lesson_User_ID INT AUTO_INCREMENT PRIMARY KEY,
-    User_ID INT NOT NULL,
-    Lesson_ID INT NOT NULL,
-    Completion_Status VARCHAR(50),
-    Completion_Date DATE,
-    Progress_Percentage DECIMAL(5, 2),
-    Status VARCHAR(20) NOT NULL,
-    FOREIGN KEY (User_ID) REFERENCES Users(User_ID),
-    FOREIGN KEY (Lesson_ID) REFERENCES Lessons(Lesson_ID)
-);
+DROP TABLE IF EXISTS `lesson_descriptions`;
+CREATE TABLE `lesson_descriptions` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `lesson_id` int NOT NULL,
+  `description_id` int NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_lesson` (`lesson_id`),
+  KEY `fk_description` (`description_id`),
+  CONSTRAINT `fk_lesson` FOREIGN KEY (`lesson_id`) REFERENCES `lessons` (`id_lesson`),
+  CONSTRAINT `fk_description` FOREIGN KEY (`description_id`) REFERENCES `descriptions` (`id_description`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
