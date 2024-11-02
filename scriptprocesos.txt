@@ -1,30 +1,4 @@
 
--- ----------------------------
--- Create tbl_lesson_user table
--- ----------------------------
-
-CREATE TABLE tbl_lesson_user (
-    id_lesson_user INT NOT NULL AUTO_INCREMENT,
-    id_user INT NOT NULL,
-    id_lesson INT NOT NULL,
-    PRIMARY KEY (id_lesson_user),
-    KEY id_user (id_user),
-    KEY id_lesson (id_lesson)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
-
--- ----------------------------
--- Create tbl_platforms table
--- ----------------------------
-
-
-CREATE TABLE tbl_platforms (
-    id_platform INT NOT NULL AUTO_INCREMENT,
-    name_platform VARCHAR(100) NOT NULL,
-    status TINYINT(1) DEFAULT 1, -- Estado de la plataforma: 1 (activo), 0 (inactivo)
-    PRIMARY KEY (id_platform)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
 
 
 
@@ -1045,10 +1019,138 @@ DELIMITER ;
 
 
 
+-- ----------------------------
+-- Create tbl_lesson_user table
+-- ----------------------------
+
+CREATE TABLE tbl_lesson_user (
+    id_lesson_user INT NOT NULL AUTO_INCREMENT,
+    id_user INT NOT NULL,
+    id_lesson INT NOT NULL,
+    PRIMARY KEY (id_lesson_user),
+    KEY id_user (id_user),
+    KEY id_lesson (id_lesson)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+----------------------------------------------------------
+-- Procedimientos almacenados para la tabla tbl_lesson_user----
+----------------------------------------------------------
+-- Drop existing table if necessary
+DROP TABLE IF EXISTS tbl_lesson_user;
+
+-- Create tbl_lesson_user table
+CREATE TABLE tbl_lesson_user (
+    id_lesson_user INT NOT NULL AUTO_INCREMENT,
+    id_user INT NOT NULL,
+    id_lesson INT NOT NULL,
+    PRIMARY KEY (id_lesson_user),
+    KEY id_user (id_user),
+    KEY id_lesson (id_lesson)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- Insert Lesson_User
+DELIMITER //
+CREATE PROCEDURE InsertLessonUser(
+    IN p_id_user INT,
+    IN p_id_lesson INT
+)
+BEGIN
+    INSERT INTO tbl_lesson_user (id_user, id_lesson) VALUES (p_id_user, p_id_lesson);
+END //
+DELIMITER ;
+
+-- Update Lesson_User by ID
+DELIMITER //
+CREATE PROCEDURE UpdateLessonUserById(
+    IN p_id_lesson_user INT,
+    IN p_id_user INT,
+    IN p_id_lesson INT
+)
+BEGIN
+    UPDATE tbl_lesson_user
+    SET id_user = p_id_user, id_lesson = p_id_lesson
+    WHERE id_lesson_user = p_id_lesson_user;
+END //
+DELIMITER ;
+
+-- Get All Lesson_Users
+DELIMITER //
+CREATE PROCEDURE GetAllLessonUsers()
+BEGIN
+    SELECT * FROM tbl_lesson_user;
+END //
+DELIMITER ;
+
+-- Get Lesson_User by ID
+DELIMITER //
+CREATE PROCEDURE GetLessonUserById(IN p_id_lesson_user INT)
+BEGIN
+    SELECT * FROM tbl_lesson_user WHERE id_lesson_user = p_id_lesson_user;
+END //
+DELIMITER ;
+
+-- Delete Lesson_User by ID
+DELIMITER //
+CREATE PROCEDURE DeleteLessonUserById(IN p_id_lesson_user INT)
+BEGIN
+    DELETE FROM tbl_lesson_user WHERE id_lesson_user = p_id_lesson_user;
+END //
+DELIMITER ;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- ----------------------------
+-- Create tbl_platforms table
+-- ----------------------------
+
+
+CREATE TABLE tbl_platforms (
+    id_platform INT NOT NULL AUTO_INCREMENT,
+    name_platform VARCHAR(100) NOT NULL,
+    status TINYINT(1) DEFAULT 1, -- Estado de la plataforma: 1 (activo), 0 (inactivo)
+    PRIMARY KEY (id_platform)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 
 ----------------------------------------------------------
 -- Procedimientos almacenados para la tabla tbl_platfomrs----
 ----------------------------------------------------------
+-- Drop existing table if necessary
+DROP TABLE IF EXISTS tbl_platforms;
+
+-- Create tbl_platforms table
+CREATE TABLE tbl_platforms (
+    id_platform INT NOT NULL AUTO_INCREMENT,
+    name_platform VARCHAR(100) NOT NULL,
+    status TINYINT(1) DEFAULT 1, -- Estado de la plataforma: 1 (activo), 0 (inactivo)
+    PRIMARY KEY (id_platform)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 -- Insert Platform
 DELIMITER //
 CREATE PROCEDURE InsertPlatform(
@@ -1098,3 +1200,4 @@ BEGIN
     WHERE id_platform = p_id_platform;
 END //
 DELIMITER ;
+
