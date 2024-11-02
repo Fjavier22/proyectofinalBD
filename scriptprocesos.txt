@@ -890,6 +890,73 @@ CREATE TABLE `tbl_images` (
   PRIMARY KEY (`id_image`),
   KEY `imageable` (`imageable_id`, `imageable_type`) -- Índice para mejorar la consulta
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+----------------------------------------------------------
+-- Procedimientos almacenados para la tabla tbl_images----
+----------------------------------------------------------
+
+-- Procedimiento para insertar una nueva imagen
+DELIMITER //
+CREATE PROCEDURE InsertImage(
+    IN p_url_image VARCHAR(255),
+    IN p_imageable_id INT,
+    IN p_imageable_type VARCHAR(45)
+)
+BEGIN
+    INSERT INTO tbl_images (url_image, imageable_id, imageable_type, status, created_at)
+    VALUES (p_url_image, p_imageable_id, UPPER(p_imageable_type), 1, NOW());
+END //
+DELIMITER ;
+
+-- Procedimiento para actualizar una imagen existente
+DELIMITER //
+CREATE PROCEDURE UpdateImage(
+    IN p_id_image INT,
+    IN p_url_image VARCHAR(255),
+    IN p_imageable_id INT,
+    IN p_imageable_type VARCHAR(45),
+    IN p_status TINYINT
+)
+BEGIN
+    UPDATE tbl_images
+    SET url_image = p_url_image,
+        imageable_id = p_imageable_id,
+        imageable_type = UPPER(p_imageable_type),
+        status = p_status
+    WHERE id_image = p_id_image;
+END //
+DELIMITER ;
+
+-- Procedimiento para obtener todas las imágenes activas
+DELIMITER //
+CREATE PROCEDURE GetAllActiveImages()
+BEGIN
+    SELECT * FROM tbl_images
+    WHERE status = 1;
+END //
+DELIMITER ;
+
+-- Procedimiento para buscar imágenes por tipo de contenido
+DELIMITER //
+CREATE PROCEDURE GetImagesByType(
+    IN p_imageable_type VARCHAR(45)
+)
+BEGIN
+    SELECT * FROM tbl_images
+    WHERE imageable_type = UPPER(p_imageable_type) AND status = 1;
+END //
+DELIMITER ;
+
+-- Procedimiento para eliminar una imagen de forma lógica
+DELIMITER //
+CREATE PROCEDURE DeleteImage(
+    IN p_id_image INT
+)
+BEGIN
+    UPDATE tbl_images
+    SET status = 0 -- Cambiar el estado a inactivo
+    WHERE id_image = p_id_image;
+END //
+DELIMITER ;
 --------------------------------------------------------------------------------
 ----------------------------TABLA LIKES YEINER  --------------------------------
 --------------------------------------------------------------------------------
@@ -911,3 +978,123 @@ CREATE TABLE `tbl_likes` (
   KEY `likeable` (`likeable_id`, `likeable_type`), -- Índice combinado para consultas rápidas
   CONSTRAINT `likes_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `tbl_users` (`id_user`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+---------------------------------------------------------
+-- Procedimientos almacenados para la tabla tbl_likes----
+---------------------------------------------------------
+
+-- Procedimiento para insertar un nuevo like
+DELIMITER //
+CREATE PROCEDURE InsertLike(
+    IN p_value TINYINT,
+    IN p_likeable_id INT,
+    IN p_likeable_type VARCHAR(45),
+    IN p_user_id INT
+)
+BEGIN
+    INSERT INTO tbl_likes (value, likeable_id, likeable_type, user_id, status, created_at)
+    VALUES (p_value, p_likeable_id, UPPER(p_likeable_type), p_user_id, 1, NOW());
+END //
+DELIMITER ;
+
+-- Procedimiento para actualizar un like existente
+DELIMITER //
+CREATE PROCEDURE UpdateLike(
+    IN p_id_like INT,
+    IN p_value TINYINT,
+    IN p_status TINYINT
+)
+BEGIN
+    UPDATE tbl_likes
+    SET value = p_value,
+        status = p_status
+    WHERE id_like = p_id_like;
+END //
+DELIMITER ;
+
+-- Procedimiento para obtener todos los likes activos
+DELIMITER //
+CREATE PROCEDURE GetAllActiveLikes()
+BEGIN
+    SELECT * FROM tbl_likes
+    WHERE status = 1;
+END //
+DELIMITER ;
+
+-- Procedimiento para buscar likes por tipo de contenido
+DELIMITER //
+CREATE PROCEDURE GetLikesByType(
+    IN p_likeable_type VARCHAR(45)
+)
+BEGIN
+    SELECT * FROM tbl_likes
+    WHERE likeable_type = UPPER(p_likeable_type) AND status = 1;
+END //
+DELIMITER ;
+
+-- Procedimiento para eliminar un like de forma lógica
+DELIMITER //
+CREATE PROCEDURE DeleteLike(
+    IN p_id_like INT
+)
+BEGIN
+    UPDATE tbl_likes
+    SET status = 0 -- Cambiar el estado a inactivo
+    WHERE id_like = p_id_like;
+END //
+DELIMITER ;
+
+
+
+
+----------------------------------------------------------
+-- Procedimientos almacenados para la tabla tbl_platfomrs----
+----------------------------------------------------------
+-- Insert Platform
+DELIMITER //
+CREATE PROCEDURE InsertPlatform(
+    IN p_name_platform VARCHAR(100)
+)
+BEGIN
+    INSERT INTO tbl_platforms (name_platform) VALUES (p_name_platform);
+END //
+DELIMITER ;
+
+-- Update Platform by ID
+DELIMITER //
+CREATE PROCEDURE UpdatePlatformById(
+    IN p_id_platform INT,
+    IN p_name_platform VARCHAR(100),
+    IN p_status TINYINT(1)
+)
+BEGIN
+    UPDATE tbl_platforms
+    SET name_platform = p_name_platform, status = p_status
+    WHERE id_platform = p_id_platform;
+END //
+DELIMITER ;
+
+-- Get All Platforms
+DELIMITER //
+CREATE PROCEDURE GetAllPlatforms()
+BEGIN
+    SELECT * FROM tbl_platforms WHERE status = 1;
+END //
+DELIMITER ;
+
+-- Get Platform by ID
+DELIMITER //
+CREATE PROCEDURE GetPlatformById(IN p_id_platform INT)
+BEGIN
+    SELECT * FROM tbl_platforms WHERE id_platform = p_id_platform AND status = 1;
+END //
+DELIMITER ;
+
+-- Delete Logic (Soft Delete) by ID
+DELIMITER //
+CREATE PROCEDURE DeletePlatformById(IN p_id_platform INT)
+BEGIN
+    UPDATE tbl_platforms
+    SET status = 0
+    WHERE id_platform = p_id_platform;
+END //
+DELIMITER ;
