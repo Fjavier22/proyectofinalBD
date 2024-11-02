@@ -543,7 +543,7 @@ CREATE PROCEDURE InsertComment(
     IN content TEXT
 )
 BEGIN
-    INSERT INTO comments (commentable_id, commentable_type, id_user, content, created_at, status)
+    INSERT INTO tbl_comments (commentable_id, commentable_type, id_user, content, created_at, status)
     VALUES (commentable_id, commentable_type, id_user, UPPER(content), NOW(), 1);
 END //
 DELIMITER ;
@@ -556,7 +556,7 @@ CREATE PROCEDURE UpdateComment(
     IN status TINYINT
 )
 BEGIN
-    UPDATE comments
+    UPDATE tbl_comments
     SET content = UPPER(content),  -- Convertir el contenido a mayúsculas
         status = status
     WHERE id_comment = id_comment;  -- Asegúrate de que el nombre sea correcto
@@ -567,7 +567,7 @@ DELIMITER ;
 DELIMITER //
 CREATE PROCEDURE GetAllComments()
 BEGIN
-    SELECT * FROM comments;
+    SELECT * FROM tbl_comments;
 END //
 DELIMITER ;
 
@@ -577,7 +577,7 @@ CREATE PROCEDURE GetCommentsByContent(
     IN content VARCHAR(255)
 )
 BEGIN
-    SELECT * FROM comments
+    SELECT * FROM tbl_comments
     WHERE content LIKE CONCAT('%', UPPER(content), '%');  -- Convertir a mayúsculas para la búsqueda
 END //
 DELIMITER ;
@@ -588,7 +588,7 @@ CREATE PROCEDURE DeleteComment(
     IN id_comment INT
 )
 BEGIN
-    UPDATE comments
+    UPDATE tbl_comments
     SET status = 0  -- Cambiamos el estado a inactivo
     WHERE id_comment = id_comment;  -- Asegúrate de que el nombre sea correcto
 END //
@@ -601,7 +601,7 @@ DELIMITER ;
 -- ----------------------------
 -- Table structure for REVIEWS
 -- ----------------------------
-DROP TABLE IF EXISTS `reviews`;
+DROP TABLE IF EXISTS `tbl_reviews`;
 
 CREATE TABLE `tbl_reviews` (
   `id_review` INT NOT NULL AUTO_INCREMENT,
@@ -632,7 +632,7 @@ CREATE PROCEDURE InsertReview(
     IN course_id INT
 )
 BEGIN
-    INSERT INTO reviews (comment_review, rating_review, id_user, course_id)
+    INSERT INTO tbl_reviews (comment_review, rating_review, id_user, course_id)
     VALUES (UPPER(comment_review), rating_review, id_user, course_id);  -- Convertir a mayúsculas
 END $$
 
@@ -647,7 +647,7 @@ CREATE PROCEDURE UpdateReview(
     IN estado TINYINT
 )
 BEGIN
-    UPDATE reviews
+    UPDATE tbl_reviews
     SET comment_review = UPPER(comment_review),  -- Convertir a mayúsculas
         rating_review = rating_review,
         estado = estado
@@ -660,7 +660,7 @@ DELIMITER ;
 DELIMITER $$
 CREATE PROCEDURE GetAllReviews()
 BEGIN
-    SELECT * FROM reviews;
+    SELECT * FROM tbl_reviews;
 END $$
 
 DELIMITER ;
@@ -671,7 +671,7 @@ CREATE PROCEDURE GetReviewsByComment(
     IN comment VARCHAR(255)
 )
 BEGIN
-    SELECT * FROM reviews
+    SELECT * FROM tbl_reviews
     WHERE comment_review LIKE CONCAT('%', UPPER(comment), '%');  -- Convertir a mayúsculas para la búsqueda
 END $$
 
@@ -683,7 +683,7 @@ CREATE PROCEDURE DeleteReview(
     IN id_review INT
 )
 BEGIN
-    UPDATE reviews
+    UPDATE tbl_reviews
     SET estado = 0 -- Cambiar el estado a inactivo
     WHERE id_review = id_review;  -- Asegúrate de que el nombre sea correcto
 END $$
