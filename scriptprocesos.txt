@@ -1,6 +1,6 @@
 -- Table structure for comments
 -- Tabla comments (polimorfica)
--- ----------------------------
+-- --------------------------------------
 DROP TABLE IF EXISTS `tbl_comments`;
 
 CREATE TABLE `tbl_comments` (
