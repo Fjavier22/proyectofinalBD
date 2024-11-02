@@ -106,3 +106,90 @@ BEGIN
     WHERE Section_ID = p_section_id;
 END //
 DELIMITER ;
+
+
+
+
+DROP TABLE IF EXISTS Profiles;
+
+CREATE TABLE Profiles (
+    Profile_ID INT AUTO_INCREMENT PRIMARY KEY,
+    User_ID INT NOT NULL,
+    Profile_Name VARCHAR(100) NOT NULL,
+    Profile_Description TEXT,
+    Age INT,
+    Rank INT,
+    Profile_Type VARCHAR(50),
+    Status VARCHAR(20) DEFAULT 'Activo',
+    Created_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    Updated_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (User_ID) REFERENCES Users(User_ID)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- Insertar un perfil
+DELIMITER //
+CREATE PROCEDURE InsertProfile(
+    IN p_user_id INT,
+    IN p_profile_name VARCHAR(100),
+    IN p_profile_description TEXT,
+    IN p_age INT,
+    IN p_rank INT,
+    IN p_profile_type VARCHAR(50)
+)
+BEGIN
+    INSERT INTO Profiles (User_ID, Profile_Name, Profile_Description, Age, Rank, Profile_Type, Status)
+    VALUES (p_user_id, p_profile_name, p_profile_description, p_age, p_rank, p_profile_type, 'Activo');
+END //
+DELIMITER ;
+
+-- Actualizar un perfil por ID
+DELIMITER //
+CREATE PROCEDURE UpdateProfileByID(
+    IN p_profile_id INT,
+    IN p_profile_name VARCHAR(100),
+    IN p_profile_description TEXT,
+    IN p_age INT,
+    IN p_rank INT,
+    IN p_profile_type VARCHAR(50)
+)
+BEGIN
+    UPDATE Profiles
+    SET Profile_Name = p_profile_name,
+        Profile_Description = p_profile_description,
+        Age = p_age,
+        Rank = p_rank,
+        Profile_Type = p_profile_type,
+        Updated_At = CURRENT_TIMESTAMP
+    WHERE Profile_ID = p_profile_id AND Status = 'Activo';
+END //
+DELIMITER ;
+
+-- Obtener todos los perfiles activos
+DELIMITER //
+CREATE PROCEDURE GetAllProfiles()
+BEGIN
+    SELECT *
+    FROM Profiles
+    WHERE Status = 'Activo';
+END //
+DELIMITER ;
+
+-- Obtener perfil por ID
+DELIMITER //
+CREATE PROCEDURE GetProfileByID(IN p_profile_id INT)
+BEGIN
+    SELECT *
+    FROM Profiles
+    WHERE Profile_ID = p_profile_id AND Status = 'Activo';
+END //
+DELIMITER ;
+
+-- Eliminar perfil por ID (lógica de eliminación)
+DELIMITER //
+CREATE PROCEDURE DeleteProfileByID(IN p_profile_id INT)
+BEGIN
+    UPDATE Profiles
+    SET Status = 'Inactivo'
+    WHERE Profile_ID = p_profile_id;
+END //
+DELIMITER ;
