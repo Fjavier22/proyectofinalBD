@@ -1,54 +1,59 @@
--- TABLE tbl_courses
+-- ----------------------------
+-- tbl_courses
+-- ----------------------------
 DROP TABLE IF EXISTS `tbl_courses`;
+
 CREATE TABLE `tbl_courses` (
-  `id_course` int NOT NULL AUTO_INCREMENT,
-  `course_title` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `course_subtitle` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `course_description` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `course_status` int DEFAULT NULL,
-  `id_user` int DEFAULT NULL,
-  `id_level` int DEFAULT NULL,
-  `id_category` int DEFAULT NULL,
-  `id_price` int DEFAULT NULL,
+  `id_course` INT NOT NULL AUTO_INCREMENT,
+  `title_course` VARCHAR(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `subtitle_course` VARCHAR(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `description_course` VARCHAR(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `status_course` TINYINT(1) DEFAULT 1, -- Estado del curso: 1 (activo), 0 (inactivo)
+  `id_user` INT DEFAULT NULL,
+  `id_level` INT DEFAULT NULL,
+  `id_category` INT DEFAULT NULL,
+  `id_price` INT DEFAULT NULL,
   PRIMARY KEY (`id_course`),
-  KEY `id_level` (`id_level`),
-  KEY `id_user` (`id_user`),
-  KEY `id_category` (`id_category`),
-  KEY `id_price` (`id_price`)
+  KEY `fk_level_id` (`id_level`),
+  KEY `fk_user_id` (`id_user`),
+  KEY `fk_category_id` (`id_category`),
+  KEY `fk_price_id` (`id_price`),
+  CONSTRAINT `fk_courses_user` FOREIGN KEY (`id_user`) REFERENCES `tbl_users` (`id_user`),
+  CONSTRAINT `fk_courses_level` FOREIGN KEY (`id_level`) REFERENCES `tbl_levels` (`id_level`),
+  CONSTRAINT `fk_courses_category` FOREIGN KEY (`id_category`) REFERENCES `tbl_categories` (`id_category`),
+  CONSTRAINT `fk_courses_price` FOREIGN KEY (`id_price`) REFERENCES `tbl_prices` (`id_price`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-BEGIN;
-COMMIT;
-
--- PROCEDURE tbl_courses
+-- ----------------------------
 -- InsertCourse
-DELIMITER //
-DROP PROCEDURE IF EXISTS InsertCourse;
+-- ----------------------------
+DELIMITER $$
 CREATE PROCEDURE InsertCourse(
-    IN p_course_title VARCHAR(45),
-    IN p_course_subtitle VARCHAR(45),
-    IN p_course_description VARCHAR(45),
-    IN p_course_status INT,
+    IN p_title_course VARCHAR(45),
+    IN p_subtitle_course VARCHAR(45),
+    IN p_description_course VARCHAR(45),
+    IN p_status_course TINYINT,
     IN p_id_user INT,
     IN p_id_level INT,
     IN p_id_category INT,
     IN p_id_price INT
 )
 BEGIN
-    INSERT INTO tbl_courses (course_title, course_subtitle, course_description, course_status, id_user, id_level, id_category, id_price)
-    VALUES (p_course_title, p_course_subtitle, p_course_description, p_course_status, p_id_user, p_id_level, p_id_category, p_id_price);
-END //
+    INSERT INTO tbl_courses (title_course, subtitle_course, description_course, status_course, id_user, id_level, id_category, id_price)
+    VALUES (p_title_course, p_subtitle_course, p_description_course, p_status_course, p_id_user, p_id_level, p_id_category, p_id_price);
+END $$
 DELIMITER ;
 
--- UpdateCourseById
-DELIMITER //
-DROP PROCEDURE IF EXISTS UpdateCourseById;
-CREATE PROCEDURE UpdateCourseById(
+-- ----------------------------
+-- UpdateCourse
+-- ----------------------------
+DELIMITER $$
+CREATE PROCEDURE UpdateCourse(
     IN p_id_course INT,
-    IN p_course_title VARCHAR(45),
-    IN p_course_subtitle VARCHAR(45),
-    IN p_course_description VARCHAR(45),
-    IN p_course_status INT,
+    IN p_title_course VARCHAR(45),
+    IN p_subtitle_course VARCHAR(45),
+    IN p_description_course VARCHAR(45),
+    IN p_status_course TINYINT,
     IN p_id_user INT,
     IN p_id_level INT,
     IN p_id_category INT,
@@ -56,48 +61,54 @@ CREATE PROCEDURE UpdateCourseById(
 )
 BEGIN
     UPDATE tbl_courses
-    SET course_title = p_course_title,
-        course_subtitle = p_course_subtitle,
-        course_description = p_course_description,
-        course_status = p_course_status,
+    SET title_course = p_title_course,
+        subtitle_course = p_subtitle_course,
+        description_course = p_description_course,
+        status_course = p_status_course,
         id_user = p_id_user,
         id_level = p_id_level,
         id_category = p_id_category,
         id_price = p_id_price
     WHERE id_course = p_id_course;
-END //
+END $$
 DELIMITER ;
 
+-- ----------------------------
 -- GetAllCourses
-DELIMITER //
-DROP PROCEDURE IF EXISTS GetAllCourses;
+-- ----------------------------
+DELIMITER $$
 CREATE PROCEDURE GetAllCourses()
 BEGIN
-    SELECT id_course, course_title, course_subtitle, course_description, course_status, id_user, id_level, id_category, id_price
-    FROM tbl_courses;
-END //
+    SELECT * FROM tbl_courses
+    WHERE status_course = 1;
+END $$
 DELIMITER ;
 
--- GetCourseById
-DELIMITER //
-DROP PROCEDURE IF EXISTS GetCourseById;
-CREATE PROCEDURE GetCourseById(IN p_id_course INT)
+-- ----------------------------
+-- GetCoursesByTitle
+-- ----------------------------
+DELIMITER $$
+CREATE PROCEDURE GetCoursesByTitle(
+    IN p_title_course VARCHAR(45)
+)
 BEGIN
-    SELECT id_course, course_title, course_subtitle, course_description, course_status, id_user, id_level, id_category, id_price
-    FROM tbl_courses
-    WHERE id_course = p_id_course;
-END //
+    SELECT * FROM tbl_courses
+    WHERE title_course LIKE CONCAT('%', p_title_course, '%') AND status_course = 1;
+END $$
 DELIMITER ;
 
--- DeleteCourseById
-DELIMITER //
-DROP PROCEDURE IF EXISTS DeleteCourseById;
-CREATE PROCEDURE DeleteCourseById(IN p_id_course INT)
+-- ----------------------------
+-- DeleteCourse
+-- ----------------------------
+DELIMITER $$
+CREATE PROCEDURE DeleteCourse(
+    IN p_id_course INT
+)
 BEGIN
     UPDATE tbl_courses
-    SET course_status = 0  -- Considerando 0 como inactivo
+    SET status_course = 0 -- Cambiamos el estado a inactivo
     WHERE id_course = p_id_course;
-END //
+END $$
 DELIMITER ;
 
 
@@ -174,78 +185,86 @@ BEGIN
 END $$
 DELIMITER ;
 
--- TABLE tbl_goals
+-- ----------------------------
+-- tbl_goals
+-- ----------------------------
 DROP TABLE IF EXISTS `tbl_goals`;
-CREATE TABLE `tbl_goals` (
-  `id_goal` int NOT NULL AUTO_INCREMENT,
-  `goal_name` varchar(34) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `id_course` int NOT NULL,
-  PRIMARY KEY (`id_goal`),
-  KEY `id_course` (`id_course`),
-  CONSTRAINT `tbl_goals_ibfk_1` FOREIGN KEY (`id_course`) REFERENCES `tbl_courses` (`id_course`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-BEGIN;
-COMMIT;
 
--- PROCEDURE tbl_goals
+CREATE TABLE `tbl_goals` (
+  `id_goal` INT NOT NULL AUTO_INCREMENT,
+  `name_goal` VARCHAR(34) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `id_course` INT NOT NULL,
+  PRIMARY KEY (`id_goal`),
+  KEY `fk_course_id` (`id_course`),
+  CONSTRAINT `fk_goals_course` FOREIGN KEY (`id_course`) REFERENCES `tbl_courses` (`id_course`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
 -- InsertGoal
-DELIMITER //
-DROP PROCEDURE IF EXISTS InsertGoal;
+-- ----------------------------
+DELIMITER $$
 CREATE PROCEDURE InsertGoal(
-    IN p_goal_name VARCHAR(34),
+    IN p_name_goal VARCHAR(34),
     IN p_id_course INT
 )
 BEGIN
-    INSERT INTO tbl_goals (goal_name, id_course)
-    VALUES (p_goal_name, p_id_course);
-END //
+    INSERT INTO tbl_goals (name_goal, id_course)
+    VALUES (p_name_goal, p_id_course);
+END $$
 DELIMITER ;
 
--- UpdateGoalById
-DELIMITER //
-DROP PROCEDURE IF EXISTS UpdateGoalById;
-CREATE PROCEDURE UpdateGoalById(
+
+-- ----------------------------
+-- UpdateGoal
+-- ----------------------------
+DELIMITER $$
+CREATE PROCEDURE UpdateGoal(
     IN p_id_goal INT,
-    IN p_goal_name VARCHAR(34),
+    IN p_name_goal VARCHAR(34),
     IN p_id_course INT
 )
 BEGIN
     UPDATE tbl_goals
-    SET goal_name = p_goal_name,
+    SET name_goal = p_name_goal,
         id_course = p_id_course
     WHERE id_goal = p_id_goal;
-END //
+END $$
 DELIMITER ;
 
+-- ----------------------------
 -- GetAllGoals
-DELIMITER //
-DROP PROCEDURE IF EXISTS GetAllGoals;
+-- ----------------------------
+DELIMITER $$
 CREATE PROCEDURE GetAllGoals()
 BEGIN
-    SELECT id_goal, goal_name, id_course
-    FROM tbl_goals;
-END //
+    SELECT * FROM tbl_goals;
+END $$
 DELIMITER ;
 
--- GetGoalById
-DELIMITER //
-DROP PROCEDURE IF EXISTS GetGoalById;
-CREATE PROCEDURE GetGoalById(IN p_id_goal INT)
+-- ----------------------------
+-- GetGoalsByName
+-- ----------------------------
+DELIMITER $$
+CREATE PROCEDURE GetGoalsByName(
+    IN p_name_goal VARCHAR(34)
+)
 BEGIN
-    SELECT id_goal, goal_name, id_course
-    FROM tbl_goals
-    WHERE id_goal = p_id_goal;
-END //
+    SELECT * FROM tbl_goals
+    WHERE name_goal LIKE CONCAT('%', p_name_goal, '%');
+END $$
 DELIMITER ;
 
--- DeleteGoalById
-DELIMITER //
-DROP PROCEDURE IF EXISTS DeleteGoalById;
-CREATE PROCEDURE DeleteGoalById(IN p_id_goal INT)
+-- ----------------------------
+-- DeleteGoal
+-- ----------------------------
+DELIMITER $$
+CREATE PROCEDURE DeleteGoal(
+    IN p_id_goal INT
+)
 BEGIN
     DELETE FROM tbl_goals
     WHERE id_goal = p_id_goal;
-END //
+END $$
 DELIMITER ;
 
 :::::::::::::::TABLE LESSON:::::::::::::::
