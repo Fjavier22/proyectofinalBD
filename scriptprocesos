@@ -19,16 +19,90 @@ CREATE TABLE Lesson_Users (
     FOREIGN KEY (Lesson_ID) REFERENCES Lessons(Lesson_ID)
 );
 
+DROP TABLE IF EXISTS Sections;
 CREATE TABLE Sections (
     Section_ID INT AUTO_INCREMENT PRIMARY KEY,
     Lesson_ID INT NOT NULL,
     Section_Title VARCHAR(100) NOT NULL,
     Section_Description TEXT,
-    Duration INT, 
-    Order_Num INT, 
-    Content_Type VARCHAR(50), 
-    Status VARCHAR(20) DEFAULT 'Activo', 
-    Created_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
-    Updated_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+    Duration INT,
+    Order_Num INT,
+    Content_Type VARCHAR(50),
+    Status VARCHAR(20) DEFAULT 'Activo',
+    Created_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    Updated_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (Lesson_ID) REFERENCES Lessons(Lesson_ID)
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Registros de secciones
+-- ----------------------------
+BEGIN;
+COMMIT;
+-- Insertar una sección
+DELIMITER //
+CREATE PROCEDURE InsertSection(
+    IN p_lesson_id INT,
+    IN p_section_title VARCHAR(100),
+    IN p_section_description TEXT,
+    IN p_duration INT,
+    IN p_order_num INT,
+    IN p_content_type VARCHAR(50)
+)
+BEGIN
+    INSERT INTO Sections (Lesson_ID, Section_Title, Section_Description, Duration, Order_Num, Content_Type, Status)
+    VALUES (p_lesson_id, p_section_title, p_section_description, p_duration, p_order_num, p_content_type, 'Activo');
+END //
+DELIMITER ;
+
+-- Actualizar una sección por ID
+DELIMITER //
+CREATE PROCEDURE UpdateSectionByID(
+    IN p_section_id INT,
+    IN p_section_title VARCHAR(100),
+    IN p_section_description TEXT,
+    IN p_duration INT,
+    IN p_order_num INT,
+    IN p_content_type VARCHAR(50)
+)
+BEGIN
+    UPDATE Sections
+    SET Section_Title = p_section_title,
+        Section_Description = p_section_description,
+        Duration = p_duration,
+        Order_Num = p_order_num,
+        Content_Type = p_content_type,
+        Updated_At = CURRENT_TIMESTAMP
+    WHERE Section_ID = p_section_id AND Status = 'Activo';
+END //
+DELIMITER ;
+
+-- Obtener todas las secciones activas
+DELIMITER //
+CREATE PROCEDURE GetAllSections()
+BEGIN
+    SELECT *
+    FROM Sections
+    WHERE Status = 'Activo';
+END //
+DELIMITER ;
+
+-- Obtener sección por ID
+DELIMITER //
+CREATE PROCEDURE GetSectionByID(IN p_section_id INT)
+BEGIN
+    SELECT *
+    FROM Sections
+    WHERE Section_ID = p_section_id AND Status = 'Activo';
+END //
+DELIMITER ;
+
+-- Eliminar sección por ID (lógica de eliminación)
+DELIMITER //
+CREATE PROCEDURE DeleteSectionByID(IN p_section_id INT)
+BEGIN
+    UPDATE Sections
+    SET Status = 'Inactivo'
+    WHERE Section_ID = p_section_id;
+END //
+DELIMITER ;
