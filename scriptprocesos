@@ -2,41 +2,40 @@
 DROP TABLE IF EXISTS `courses`;
 CREATE TABLE `courses` (
   `id_course` int NOT NULL AUTO_INCREMENT,
-  `title_course` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `subtitle_course` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `description_course` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `status_course` int DEFAULT NULL,
-  `user_id` int DEFAULT NULL,
-  `level_id` int DEFAULT NULL,
-  `category_id` int DEFAULT NULL,
-  `price_id` int DEFAULT NULL,
+  `course_title` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `course_subtitle` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `course_description` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `course_status` int DEFAULT NULL,
+  `id_user` int DEFAULT NULL,
+  `id_level` int DEFAULT NULL,
+  `id_category` int DEFAULT NULL,
+  `id_price` int DEFAULT NULL,
   PRIMARY KEY (`id_course`),
-  KEY `level_id` (`level_id`),
-  KEY `user_id` (`user_id`),
-  KEY `category_id` (`category_id`),
-  KEY `price_id` (`price_id`)
+  KEY `id_level` (`id_level`),
+  KEY `id_user` (`id_user`),
+  KEY `id_category` (`id_category`),
+  KEY `id_price` (`id_price`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 BEGIN;
 COMMIT;
 
 -- PROCEDURE COURSES
--- PROCEDURE TABLE COURSES
 -- InsertCourse
 DELIMITER //
 DROP PROCEDURE IF EXISTS InsertCourse;
 CREATE PROCEDURE InsertCourse(
-    IN p_title_course VARCHAR(45),
-    IN p_subtitle_course VARCHAR(45),
-    IN p_description_course VARCHAR(45),
-    IN p_status_course INT,
-    IN p_user_id INT,
-    IN p_level_id INT,
-    IN p_category_id INT,
-    IN p_price_id INT
+    IN p_course_title VARCHAR(45),
+    IN p_course_subtitle VARCHAR(45),
+    IN p_course_description VARCHAR(45),
+    IN p_course_status INT,
+    IN p_id_user INT,
+    IN p_id_level INT,
+    IN p_id_category INT,
+    IN p_id_price INT
 )
 BEGIN
-    INSERT INTO courses (title_course, subtitle_course, description_course, status_course, user_id, level_id, category_id, price_id)
-    VALUES (p_title_course, p_subtitle_course, p_description_course, p_status_course, p_user_id, p_level_id, p_category_id, p_price_id);
+    INSERT INTO courses (course_title, course_subtitle, course_description, course_status, id_user, id_level, id_category, id_price)
+    VALUES (p_course_title, p_course_subtitle, p_course_description, p_course_status, p_id_user, p_id_level, p_id_category, p_id_price);
 END //
 DELIMITER ;
 
@@ -45,25 +44,25 @@ DELIMITER //
 DROP PROCEDURE IF EXISTS UpdateCourseById;
 CREATE PROCEDURE UpdateCourseById(
     IN p_id_course INT,
-    IN p_title_course VARCHAR(45),
-    IN p_subtitle_course VARCHAR(45),
-    IN p_description_course VARCHAR(45),
-    IN p_status_course INT,
-    IN p_user_id INT,
-    IN p_level_id INT,
-    IN p_category_id INT,
-    IN p_price_id INT
+    IN p_course_title VARCHAR(45),
+    IN p_course_subtitle VARCHAR(45),
+    IN p_course_description VARCHAR(45),
+    IN p_course_status INT,
+    IN p_id_user INT,
+    IN p_id_level INT,
+    IN p_id_category INT,
+    IN p_id_price INT
 )
 BEGIN
     UPDATE courses
-    SET title_course = p_title_course,
-        subtitle_course = p_subtitle_course,
-        description_course = p_description_course,
-        status_course = p_status_course,
-        user_id = p_user_id,
-        level_id = p_level_id,
-        category_id = p_category_id,
-        price_id = p_price_id
+    SET course_title = p_course_title,
+        course_subtitle = p_course_subtitle,
+        course_description = p_course_description,
+        course_status = p_course_status,
+        id_user = p_id_user,
+        id_level = p_id_level,
+        id_category = p_id_category,
+        id_price = p_id_price
     WHERE id_course = p_id_course;
 END //
 DELIMITER ;
@@ -73,7 +72,7 @@ DELIMITER //
 DROP PROCEDURE IF EXISTS GetAllCourses;
 CREATE PROCEDURE GetAllCourses()
 BEGIN
-    SELECT id_course, title_course, subtitle_course, description_course, status_course, user_id, level_id, category_id, price_id
+    SELECT id_course, course_title, course_subtitle, course_description, course_status, id_user, id_level, id_category, id_price
     FROM courses;
 END //
 DELIMITER ;
@@ -83,7 +82,7 @@ DELIMITER //
 DROP PROCEDURE IF EXISTS GetCourseById;
 CREATE PROCEDURE GetCourseById(IN p_id_course INT)
 BEGIN
-    SELECT id_course, title_course, subtitle_course, description_course, status_course, user_id, level_id, category_id, price_id
+    SELECT id_course, course_title, course_subtitle, course_description, course_status, id_user, id_level, id_category, id_price
     FROM courses
     WHERE id_course = p_id_course;
 END //
@@ -95,23 +94,20 @@ DROP PROCEDURE IF EXISTS DeleteCourseById;
 CREATE PROCEDURE DeleteCourseById(IN p_id_course INT)
 BEGIN
     UPDATE courses
-    SET status_course = 0  -- Considerando 0 como inactivo
+    SET course_status = 0  -- Considerando 0 como inactivo
     WHERE id_course = p_id_course;
 END //
 DELIMITER ;
-
-
-
 
 -- TABLE GOALS
 DROP TABLE IF EXISTS `goals`;
 CREATE TABLE `goals` (
   `id_goal` int NOT NULL AUTO_INCREMENT,
-  `name_goal` varchar(34) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `course_id` int NOT NULL,
+  `goal_name` varchar(34) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `id_course` int NOT NULL,
   PRIMARY KEY (`id_goal`),
-  KEY `course_id` (`course_id`),
-  CONSTRAINT `goals_ibfk_1` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id_course`)
+  KEY `id_course` (`id_course`),
+  CONSTRAINT `goals_ibfk_1` FOREIGN KEY (`id_course`) REFERENCES `courses` (`id_course`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 BEGIN;
 COMMIT;
@@ -121,12 +117,12 @@ COMMIT;
 DELIMITER //
 DROP PROCEDURE IF EXISTS InsertGoal;
 CREATE PROCEDURE InsertGoal(
-    IN p_name_goal VARCHAR(34),
-    IN p_course_id INT
+    IN p_goal_name VARCHAR(34),
+    IN p_id_course INT
 )
 BEGIN
-    INSERT INTO goals (name_goal, course_id)
-    VALUES (p_name_goal, p_course_id);
+    INSERT INTO goals (goal_name, id_course)
+    VALUES (p_goal_name, p_id_course);
 END //
 DELIMITER ;
 
@@ -135,13 +131,13 @@ DELIMITER //
 DROP PROCEDURE IF EXISTS UpdateGoalById;
 CREATE PROCEDURE UpdateGoalById(
     IN p_id_goal INT,
-    IN p_name_goal VARCHAR(34),
-    IN p_course_id INT
+    IN p_goal_name VARCHAR(34),
+    IN p_id_course INT
 )
 BEGIN
     UPDATE goals
-    SET name_goal = p_name_goal,
-        course_id = p_course_id
+    SET goal_name = p_goal_name,
+        id_course = p_id_course
     WHERE id_goal = p_id_goal;
 END //
 DELIMITER ;
@@ -151,7 +147,7 @@ DELIMITER //
 DROP PROCEDURE IF EXISTS GetAllGoals;
 CREATE PROCEDURE GetAllGoals()
 BEGIN
-    SELECT id_goal, name_goal, course_id
+    SELECT id_goal, goal_name, id_course
     FROM goals;
 END //
 DELIMITER ;
@@ -161,7 +157,7 @@ DELIMITER //
 DROP PROCEDURE IF EXISTS GetGoalById;
 CREATE PROCEDURE GetGoalById(IN p_id_goal INT)
 BEGIN
-    SELECT id_goal, name_goal, course_id
+    SELECT id_goal, goal_name, id_course
     FROM goals
     WHERE id_goal = p_id_goal;
 END //
