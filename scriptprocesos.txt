@@ -509,16 +509,26 @@ COMMIT;
 -- Procedimiento almacenado para insertar un nuevo comentario
 DELIMITER //
 CREATE PROCEDURE InsertComment(
+    IN p_comment VARCHAR(255),
+    IN p_author VARCHAR(100),
+    IN p_date DATETIME,
     IN p_commentable_id INT,
-    IN p_commentable_type VARCHAR(45),
-    IN p_id_user INT,
-    IN p_content TEXT
+    IN p_commentable_type VARCHAR(45)  -- Nuevo parámetro
 )
 BEGIN
-    INSERT INTO tbl_comments (commentable_id, commentable_type, id_user, content, created_at, status)
-    VALUES (p_commentable_id, p_commentable_type, p_id_user, UPPER(p_content), NOW(), 1);
+    INSERT INTO tbl_comments (content, commentable_id, commentable_type, id_user, created_at)
+    VALUES (
+        p_comment, 
+        p_commentable_id, 
+        p_commentable_type,  -- Usar el nuevo parámetro
+        (SELECT id_user FROM tbl_users WHERE name_user COLLATE utf8mb4_general_ci = p_author COLLATE utf8mb4_general_ci), 
+        p_date
+    );
 END //
 DELIMITER ;
+
+
+
 
 -- Procedimiento almacenado para actualizar un comentario existente
 DELIMITER //
@@ -550,9 +560,10 @@ CREATE PROCEDURE GetCommentsByContent(
 )
 BEGIN
     SELECT * FROM tbl_comments
-    WHERE content LIKE CONCAT('%', UPPER(p_content), '%');  -- Convertir a mayúsculas para la búsqueda
+    WHERE content COLLATE utf8mb4_general_ci LIKE CONCAT('%', UPPER(p_content), '%');  -- Asegúrate de usar la colación correcta
 END //
 DELIMITER ;
+
 
 -- Procedimiento almacenado para eliminar un comentario de forma lógica
 DELIMITER //
@@ -592,8 +603,8 @@ CREATE TABLE `tbl_reviews` (
 
 -- :::::::::::::::::::::::
 
--- PROCEDURE tbl_comments
--- PROCEDURE TABLE tbl_comments
+-- PROCEDURE tbl_review
+-- PROCEDURE TABLE tbl_review
 
 -- Procedimiento para insertar una nueva reseña
 DELIMITER $$
@@ -628,15 +639,6 @@ END $$
 
 DELIMITER ;
 
--- Procedimiento para obtener todas las reseñas
-DELIMITER $$
-CREATE PROCEDURE GetAllReviews()
-BEGIN
-    SELECT * FROM tbl_reviews;
-END $$
-
-DELIMITER ;
-
 -- Procedimiento para buscar reseñas por comentario
 DELIMITER $$
 CREATE PROCEDURE GetReviewsByComment(
@@ -644,9 +646,8 @@ CREATE PROCEDURE GetReviewsByComment(
 )
 BEGIN
     SELECT * FROM tbl_reviews
-    WHERE comment_review LIKE CONCAT('%', UPPER(p_comment), '%');  -- Convertir a mayúsculas para la búsqueda
+    WHERE comment_review COLLATE utf8mb4_general_ci LIKE CONCAT('%', UPPER(p_comment), '%');  -- Convertir a mayúsculas para la búsqueda
 END $$
-
 DELIMITER ;
 
 -- Procedimiento para eliminar una reseña (de forma lógica)
