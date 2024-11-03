@@ -1,684 +1,1289 @@
+/*
+ Navicat Premium Data Transfer
 
+ Source Server         : mysql local
+ Source Server Type    : MySQL
+ Source Server Version : 80033 (8.0.33)
+ Source Host           : localhost:3306
+ Source Schema         : academy
 
+ Target Server Type    : MySQL
+ Target Server Version : 80033 (8.0.33)
+ File Encoding         : 65001
 
+ Date: 29/10/2024 15:15:20
+*/
+
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
 
 -- ----------------------------
--- tbl_courses
+-- Table structure for tbl_audiences
 -- ----------------------------
-DROP TABLE IF EXISTS `tbl_courses`;
-
-CREATE TABLE `tbl_courses` (
-  `id_course` INT NOT NULL AUTO_INCREMENT,
-  `title_course` VARCHAR(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `subtitle_course` VARCHAR(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `description_course` VARCHAR(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `status_course` TINYINT(1) DEFAULT 1, -- Estado del curso: 1 (activo), 0 (inactivo)
-  `id_user` INT DEFAULT NULL,
-  `id_level` INT DEFAULT NULL,
-  `id_category` INT DEFAULT NULL,
-  `id_price` INT DEFAULT NULL,
-  PRIMARY KEY (`id_course`),
-  KEY `fk_level_id` (`id_level`),
-  KEY `fk_user_id` (`id_user`),
-  KEY `fk_category_id` (`id_category`),
-  KEY `fk_price_id` (`id_price`),
-  CONSTRAINT `fk_courses_user` FOREIGN KEY (`id_user`) REFERENCES `tbl_users` (`id_user`),
-  CONSTRAINT `fk_courses_level` FOREIGN KEY (`id_level`) REFERENCES `tbl_levels` (`id_level`),
-  CONSTRAINT `fk_courses_category` FOREIGN KEY (`id_category`) REFERENCES `tbl_categories` (`id_category`),
-  CONSTRAINT `fk_courses_price` FOREIGN KEY (`id_price`) REFERENCES `tbl_prices` (`id_price`)
+-- ----------------------------
+-- Table structure for tbl_audiences
+-- ----------------------------
+DROP TABLE IF EXISTS tbl_audiences;
+CREATE TABLE tbl_audiences (
+  id_audience INT NOT NULL AUTO_INCREMENT,
+  name_audience VARCHAR(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  id_course INT NOT NULL,
+  status BOOLEAN DEFAULT TRUE,
+  PRIMARY KEY (id_audience),
+  KEY id_course (id_course),
+  CONSTRAINT tbl_audiences_ibfk_1 FOREIGN KEY (id_course) REFERENCES tbl_courses (id_course)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- ----------------------------
--- InsertCourse
+-- Records of tbl_audiences
 -- ----------------------------
-DELIMITER $$
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Stored Procedures for tbl_audiences
+-- ----------------------------
+
+-- InsertAudience Procedure
+DELIMITER //
+CREATE PROCEDURE InsertAudience(
+    IN p_name_audience VARCHAR(45),
+    IN p_id_course INT
+)
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM tbl_audiences WHERE name_audience = p_name_audience AND id_course = p_id_course) THEN
+        INSERT INTO tbl_audiences (name_audience, id_course, status)
+        VALUES (p_name_audience, p_id_course, TRUE);
+    ELSE
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Audience already exists for this course';
+    END IF;
+END //
+DELIMITER ;
+
+-- UpdateAudienceById Procedure
+DELIMITER //
+CREATE PROCEDURE UpdateAudienceById(
+    IN p_id_audience INT,
+    IN p_name_audience VARCHAR(45),
+    IN p_id_course INT,
+    IN p_status BOOLEAN
+)
+BEGIN
+    UPDATE tbl_audiences
+    SET name_audience = p_name_audience,
+        id_course = p_id_course,
+        status = p_status
+    WHERE id_audience = p_id_audience;
+END //
+DELIMITER ;
+
+-- GetAllAudiences Procedure
+DELIMITER //
+CREATE PROCEDURE GetAllAudiences()
+BEGIN
+    SELECT id_audience, name_audience, id_course
+    FROM tbl_audiences
+    WHERE status = TRUE;
+END //
+DELIMITER ;
+
+-- GetAudienceByName Procedure
+DELIMITER //
+CREATE PROCEDURE GetAudienceByName(IN p_name_audience VARCHAR(45))
+BEGIN
+    SELECT id_audience, name_audience, id_course
+    FROM tbl_audiences
+    WHERE name_audience LIKE CONCAT('%', p_name_audience, '%') AND status = TRUE;
+END //
+DELIMITER ;
+
+-- DeleteAudienceById (Soft Delete) Procedure
+DELIMITER //
+CREATE PROCEDURE DeleteAudienceById(IN p_id_audience INT)
+BEGIN
+    UPDATE tbl_audiences
+    SET status = FALSE
+    WHERE id_audience = p_id_audience;
+END //
+DELIMITER ;
+
+-- Verify Procedures
+SHOW PROCEDURE STATUS WHERE Db = 'scriptpruebas';
+-- ----------------------------
+-- Table structure for tbl_categories
+-- ----------------------------
+DROP TABLE IF EXISTS `tbl_categories`;
+CREATE TABLE `tbl_categories` (
+  `id_category` int NOT NULL AUTO_INCREMENT,
+  `name_category` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `status` boolean DEFAULT true,
+  PRIMARY KEY (`id_category`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Records of tbl_categories
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+
+-- InsertCategory Procedure
+DELIMITER //
+CREATE PROCEDURE InsertCategory(
+    IN p_name_category VARCHAR(45)
+)
+BEGIN
+    -- Verifica si la categoría ya existe, asegurando la colación en la comparación
+    IF NOT EXISTS (SELECT 1 FROM tbl_categories WHERE name_category = p_name_category COLLATE utf8mb4_general_ci) THEN
+        INSERT INTO tbl_categories (name_category, status)
+        VALUES (p_name_category, TRUE);
+    ELSE
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Category already exists';
+    END IF;
+END //
+DELIMITER ;
+
+
+
+-- UpdateCategoryById Procedure
+DELIMITER //
+CREATE PROCEDURE UpdateCategoryById(
+    IN p_id_category INT,
+    IN p_name_category VARCHAR(45),
+    IN p_status BOOLEAN
+)
+BEGIN
+    UPDATE tbl_categories
+    SET name_category = p_name_category,
+        status = p_status
+    WHERE id_category = p_id_category;
+END //
+DELIMITER ;
+
+-- GetAllCategories Procedure
+DELIMITER //
+CREATE PROCEDURE GetAllCategories()
+BEGIN
+    SELECT id_category, name_category
+    FROM tbl_categories
+    WHERE status = TRUE;
+END //
+DELIMITER ;
+
+-- GetCategoryByName Procedure
+DELIMITER //
+CREATE PROCEDURE GetCategoryByName(IN p_name_category VARCHAR(45))
+BEGIN
+    SELECT id_category, name_category
+    FROM tbl_categories
+    WHERE name_category COLLATE utf8mb4_general_ci LIKE CONCAT('%', p_name_category, '%') AND status = TRUE;
+END //
+DELIMITER ;
+
+-- DeleteCategoryById (Soft Delete) Procedure
+DELIMITER //
+CREATE PROCEDURE DeleteCategoryById(IN p_id_category INT)
+BEGIN
+    UPDATE tbl_categories
+    SET status = FALSE
+    WHERE id_category = p_id_category;
+END //
+DELIMITER ;
+
+-- ----------------------------
+-- Table structure for tbl_comments
+-- ----------------------------
+- ----------------------------
+-- Table structure for tbl_comments
+-- ----------------------------
+DROP TABLE IF EXISTS tbl_comments;
+CREATE TABLE tbl_comments (
+  id_comment INT NOT NULL AUTO_INCREMENT,
+  name_comment VARCHAR(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  commentable_id INT DEFAULT NULL,
+  commentable_type VARCHAR(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  id_user INT DEFAULT NULL,
+  status BOOLEAN DEFAULT TRUE,
+  PRIMARY KEY (id_comment),
+  KEY id_user (id_user),
+  CONSTRAINT tbl_comments_ibfk_1 FOREIGN KEY (id_user) REFERENCES tbl_users (id_user)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Records of tbl_comments
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Stored Procedures for tbl_comments
+-- ----------------------------
+
+-- InsertComment Procedure
+DELIMITER //
+CREATE PROCEDURE InsertComment(
+    IN p_name_comment VARCHAR(45),
+    IN p_commentable_id INT,
+    IN p_commentable_type VARCHAR(45),
+    IN p_id_user INT
+)
+BEGIN
+    INSERT INTO tbl_comments (name_comment, commentable_id, commentable_type, id_user, status)
+    VALUES (p_name_comment, p_commentable_id, p_commentable_type, p_id_user, TRUE);
+END //
+DELIMITER ;
+
+-- UpdateCommentById Procedure
+DELIMITER //
+CREATE PROCEDURE UpdateCommentById(
+    IN p_id_comment INT,
+    IN p_name_comment VARCHAR(45),
+    IN p_commentable_id INT,
+    IN p_commentable_type VARCHAR(45),
+    IN p_id_user INT,
+    IN p_status BOOLEAN
+)
+BEGIN
+    UPDATE tbl_comments
+    SET name_comment = p_name_comment,
+        commentable_id = p_commentable_id,
+        commentable_type = p_commentable_type,
+        id_user = p_id_user,
+        status = p_status
+    WHERE id_comment = p_id_comment;
+END //
+DELIMITER ;
+
+-- GetAllComments Procedure
+DELIMITER //
+CREATE PROCEDURE GetAllComments()
+BEGIN
+    SELECT id_comment, name_comment, commentable_id, commentable_type, id_user
+    FROM tbl_comments
+    WHERE status = TRUE;
+END //
+DELIMITER ;
+
+-- GetCommentsByTypeAndId Procedure
+DELIMITER //
+CREATE PROCEDURE GetCommentsByTypeAndId(
+    IN p_commentable_type VARCHAR(45),
+    IN p_commentable_id INT
+)
+BEGIN
+    SELECT id_comment, name_comment, id_user
+    FROM tbl_comments
+    WHERE commentable_type = p_commentable_type 
+      AND commentable_id = p_commentable_id
+      AND status = TRUE;
+END //
+DELIMITER ;
+
+-- DeleteCommentById (Soft Delete) Procedure
+DELIMITER //
+CREATE PROCEDURE DeleteCommentById(IN p_id_comment INT)
+BEGIN
+    UPDATE tbl_comments
+    SET status = FALSE
+    WHERE id_comment = p_id_comment;
+END //
+DELIMITER ;
+
+-- Verify Procedures
+SHOW PROCEDURE STATUS WHERE Db = 'scriptpruebas';
+
+-- ----------------------------
+-- Table structure for tbl_course_user
+-- ----------------------------
+DROP TABLE IF EXISTS `tbl_course_user`;
+CREATE TABLE `tbl_course_user` (
+  `id_user` int NOT NULL,
+  `id_course` int NOT NULL,
+  PRIMARY KEY (`id_user`,`id_course`),
+  KEY `id_course` (`id_course`),
+  CONSTRAINT `tbl_course_user_ibfk_1` FOREIGN KEY (`id_user`) REFERENCES `tbl_users` (`id_user`),
+  CONSTRAINT `tbl_course_user_ibfk_2` FOREIGN KEY (`id_course`) REFERENCES `tbl_courses` (`id_course`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Records of tbl_course_user
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for tbl_courses
+-- ----------------------------
+-- ----------------------------
+-- Table structure for tbl_courses
+-- ----------------------------
+DROP TABLE IF EXISTS tbl_courses;
+CREATE TABLE tbl_courses (
+  id_course INT NOT NULL AUTO_INCREMENT,
+  title_course VARCHAR(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  subtitle_course VARCHAR(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  description_course VARCHAR(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  id_user INT DEFAULT NULL,
+  id_level INT DEFAULT NULL,
+  id_category INT DEFAULT NULL,
+  id_price INT DEFAULT NULL,
+  status BOOLEAN DEFAULT TRUE,
+  PRIMARY KEY (id_course),
+  KEY id_level (id_level),
+  KEY id_user (id_user),
+  KEY id_category (id_category),
+  KEY id_price (id_price)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Records of tbl_courses
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Stored Procedures for tbl_courses
+-- ----------------------------
+
+-- InsertCourse Procedure
+DELIMITER //
 CREATE PROCEDURE InsertCourse(
     IN p_title_course VARCHAR(45),
     IN p_subtitle_course VARCHAR(45),
     IN p_description_course VARCHAR(45),
-    IN p_status_course TINYINT,
     IN p_id_user INT,
     IN p_id_level INT,
     IN p_id_category INT,
     IN p_id_price INT
 )
 BEGIN
-    INSERT INTO tbl_courses (title_course, subtitle_course, description_course, status_course, id_user, id_level, id_category, id_price)
-    VALUES (p_title_course, p_subtitle_course, p_description_course, p_status_course, p_id_user, p_id_level, p_id_category, p_id_price);
-END $$
+    IF NOT EXISTS (SELECT 1 FROM tbl_courses WHERE title_course = p_title_course AND id_user = p_id_user) THEN
+        INSERT INTO tbl_courses (title_course, subtitle_course, description_course, id_user, id_level, id_category, id_price, status)
+        VALUES (p_title_course, p_subtitle_course, p_description_course, p_id_user, p_id_level, p_id_category, p_id_price, TRUE);
+    ELSE
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Course title already exists for this user';
+    END IF;
+END //
 DELIMITER ;
 
--- ----------------------------
--- UpdateCourse
--- ----------------------------
-DELIMITER $$
-CREATE PROCEDURE UpdateCourse(
+-- UpdateCourseById Procedure
+DELIMITER //
+CREATE PROCEDURE UpdateCourseById(
     IN p_id_course INT,
     IN p_title_course VARCHAR(45),
     IN p_subtitle_course VARCHAR(45),
     IN p_description_course VARCHAR(45),
-    IN p_status_course TINYINT,
     IN p_id_user INT,
     IN p_id_level INT,
     IN p_id_category INT,
-    IN p_id_price INT
+    IN p_id_price INT,
+    IN p_status BOOLEAN
 )
 BEGIN
     UPDATE tbl_courses
     SET title_course = p_title_course,
         subtitle_course = p_subtitle_course,
         description_course = p_description_course,
-        status_course = p_status_course,
         id_user = p_id_user,
         id_level = p_id_level,
         id_category = p_id_category,
-        id_price = p_id_price
+        id_price = p_id_price,
+        status = p_status
     WHERE id_course = p_id_course;
-END $$
+END //
 DELIMITER ;
 
--- ----------------------------
--- GetAllCourses
--- ----------------------------
-DELIMITER $$
+-- GetAllCourses Procedure
+DELIMITER //
 CREATE PROCEDURE GetAllCourses()
 BEGIN
-    SELECT * FROM tbl_courses
-    WHERE status_course = 1;
-END $$
+    SELECT id_course, title_course, subtitle_course, description_course, id_user, id_level, id_category, id_price
+    FROM tbl_courses
+    WHERE status = TRUE;
+END //
 DELIMITER ;
 
--- ----------------------------
--- GetCoursesByTitle
--- ----------------------------
-DELIMITER $$
-CREATE PROCEDURE GetCoursesByTitle(
-    IN p_title_course VARCHAR(45)
-)
+-- GetCourseByTitle Procedure
+DELIMITER //
+CREATE PROCEDURE GetCourseByTitle(IN p_title_course VARCHAR(45))
 BEGIN
-    SELECT * FROM tbl_courses
-    WHERE title_course LIKE CONCAT('%', p_title_course, '%') AND status_course = 1;
-END $$
+    SELECT id_course, title_course, subtitle_course, description_course, id_user, id_level, id_category, id_price
+    FROM tbl_courses
+    WHERE title_course LIKE CONCAT('%', p_title_course, '%') AND status = TRUE;
+END //
 DELIMITER ;
 
--- ----------------------------
--- DeleteCourse
--- ----------------------------
-DELIMITER $$
-CREATE PROCEDURE DeleteCourse(
-    IN p_id_course INT
-)
+-- DeleteCourseById (Soft Delete) Procedure
+DELIMITER //
+CREATE PROCEDURE DeleteCourseById(IN p_id_course INT)
 BEGIN
     UPDATE tbl_courses
-    SET status_course = 0 -- Cambiamos el estado a inactivo
+    SET status = FALSE
     WHERE id_course = p_id_course;
-END $$
+END //
 DELIMITER ;
 
+-- Verify Procedures
+SHOW PROCEDURE STATUS WHERE Db = 'scriptpruebas';
 
-:::::::TABLE DESCRIPTION::::::::
--- Eliminamos la tabla descriptions si existe
-DROP TABLE IF EXISTS `Tbl_Descriptions`;
-
--- Creamos la tabla Tbl_Descriptions
-CREATE TABLE `Tbl_Descriptions` (
-  `id_description` INT NOT NULL AUTO_INCREMENT,
-  `name_description` VARCHAR(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `lesson_id` INT DEFAULT NULL,
-  PRIMARY KEY (`id_description`),
-  KEY `lkesson_id` (`lesson_id`),
-  CONSTRAINT `lkesson_id` FOREIGN KEY (`lesson_id`) REFERENCES `lessons` (`id_lesson`)
+-- ----------------------------
+-- Table structure for tbl_descriptions
+-- ----------------------------
+DROP TABLE IF EXISTS tbl_descriptions;
+CREATE TABLE tbl_descriptions (
+  id_description INT NOT NULL AUTO_INCREMENT,
+  name_description VARCHAR(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  id_lesson INT DEFAULT NULL,
+  status BOOLEAN DEFAULT TRUE,
+  PRIMARY KEY (id_description),
+  KEY id_lesson (id_lesson),
+  CONSTRAINT tbl_descriptions_ibfk_1 FOREIGN KEY (id_lesson) REFERENCES tbl_lessons (id_lesson)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- ----------------------------
--- Records of Tbl_Descriptions
+-- Records of tbl_descriptions
 -- ----------------------------
 BEGIN;
 COMMIT;
 
-DELIMITER $$
+-- ----------------------------
+-- Stored Procedures for tbl_descriptions
+-- ----------------------------
+
+-- InsertDescription Procedure
+DELIMITER //
 CREATE PROCEDURE InsertDescription(
     IN p_name_description VARCHAR(45),
-    IN p_lesson_id INT
+    IN p_id_lesson INT
 )
 BEGIN
-    INSERT INTO Tbl_Descriptions (name_description, lesson_id)
-    VALUES (p_name_description, p_lesson_id);
-END $$
+    INSERT INTO tbl_descriptions (name_description, id_lesson, status)
+    VALUES (p_name_description, p_id_lesson, TRUE);
+END //
 DELIMITER ;
 
-DELIMITER $$
-CREATE PROCEDURE UpdateDescription(
+-- UpdateDescriptionById Procedure
+DELIMITER //
+CREATE PROCEDURE UpdateDescriptionById(
     IN p_id_description INT,
     IN p_name_description VARCHAR(45),
-    IN p_lesson_id INT
+    IN p_id_lesson INT,
+    IN p_status BOOLEAN
 )
 BEGIN
-    UPDATE Tbl_Descriptions
+    UPDATE tbl_descriptions
     SET name_description = p_name_description,
-        lesson_id = p_lesson_id
+        id_lesson = p_id_lesson,
+        status = p_status
     WHERE id_description = p_id_description;
-END $$
+END //
 DELIMITER ;
 
-DELIMITER $$
+-- GetAllDescriptions Procedure
+DELIMITER //
 CREATE PROCEDURE GetAllDescriptions()
 BEGIN
-    SELECT * FROM Tbl_Descriptions;
-END $$
+    SELECT id_description, name_description, id_lesson
+    FROM tbl_descriptions
+    WHERE status = TRUE;
+END //
 DELIMITER ;
 
-DELIMITER $$
-CREATE PROCEDURE GetDescriptionsByName(
-    IN p_name_description VARCHAR(45)
+-- GetDescriptionsByLessonId Procedure
+DELIMITER //
+CREATE PROCEDURE GetDescriptionsByLessonId(
+    IN p_id_lesson INT
 )
 BEGIN
-    SELECT * FROM Tbl_Descriptions
-    WHERE name_description LIKE CONCAT('%', p_name_description, '%');
-END $$
+    SELECT id_description, name_description
+    FROM tbl_descriptions
+    WHERE id_lesson = p_id_lesson
+      AND status = TRUE;
+END //
 DELIMITER ;
 
-DELIMITER $$
-CREATE PROCEDURE DeleteDescription(
-    IN p_id_description INT
-)
+-- DeleteDescriptionById (Soft Delete) Procedure
+DELIMITER //
+CREATE PROCEDURE DeleteDescriptionById(IN p_id_description INT)
 BEGIN
-    UPDATE Tbl_Descriptions
-    SET name_description = NULL -- O podrías usar un campo de estado si se necesita
+    UPDATE tbl_descriptions
+    SET status = FALSE
     WHERE id_description = p_id_description;
-END $$
+END //
 DELIMITER ;
 
--- ----------------------------
--- tbl_goals
--- ----------------------------
-DROP TABLE IF EXISTS `tbl_goals`;
+-- Verify Procedures
+SHOW PROCEDURE STATUS WHERE Db = 'scriptpruebas';
 
-CREATE TABLE `tbl_goals` (
-  `id_goal` INT NOT NULL AUTO_INCREMENT,
-  `name_goal` VARCHAR(34) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `id_course` INT NOT NULL,
-  PRIMARY KEY (`id_goal`),
-  KEY `fk_course_id` (`id_course`),
-  CONSTRAINT `fk_goals_course` FOREIGN KEY (`id_course`) REFERENCES `tbl_courses` (`id_course`)
+
+-- ----------------------------
+-- Table structure for tbl_goals
+-- ----------------------------
+DROP TABLE IF EXISTS tbl_goals;
+CREATE TABLE tbl_goals (
+  id_goal INT NOT NULL AUTO_INCREMENT,
+  name_goal VARCHAR(34) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  id_course INT NOT NULL,
+  status BOOLEAN DEFAULT TRUE,
+  PRIMARY KEY (id_goal),
+  KEY id_course (id_course),
+  CONSTRAINT tbl_goals_ibfk_1 FOREIGN KEY (id_course) REFERENCES tbl_courses (id_course)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- ----------------------------
--- InsertGoal
+-- Records of tbl_goals
 -- ----------------------------
-DELIMITER $$
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Stored Procedures for tbl_goals
+-- ----------------------------
+
+-- InsertGoal Procedure
+DELIMITER //
 CREATE PROCEDURE InsertGoal(
     IN p_name_goal VARCHAR(34),
     IN p_id_course INT
 )
 BEGIN
-    INSERT INTO tbl_goals (name_goal, id_course)
-    VALUES (p_name_goal, p_id_course);
-END $$
+    INSERT INTO tbl_goals (name_goal, id_course, status)
+    VALUES (p_name_goal, p_id_course, TRUE);
+END //
 DELIMITER ;
 
-
--- ----------------------------
--- UpdateGoal
--- ----------------------------
-DELIMITER $$
-CREATE PROCEDURE UpdateGoal(
+-- UpdateGoalById Procedure
+DELIMITER //
+CREATE PROCEDURE UpdateGoalById(
     IN p_id_goal INT,
     IN p_name_goal VARCHAR(34),
-    IN p_id_course INT
+    IN p_id_course INT,
+    IN p_status BOOLEAN
 )
 BEGIN
     UPDATE tbl_goals
     SET name_goal = p_name_goal,
-        id_course = p_id_course
+        id_course = p_id_course,
+        status = p_status
     WHERE id_goal = p_id_goal;
-END $$
+END //
 DELIMITER ;
 
--- ----------------------------
--- GetAllGoals
--- ----------------------------
-DELIMITER $$
+-- GetAllGoals Procedure
+DELIMITER //
 CREATE PROCEDURE GetAllGoals()
 BEGIN
-    SELECT * FROM tbl_goals;
-END $$
+    SELECT id_goal, name_goal, id_course
+    FROM tbl_goals
+    WHERE status = TRUE;
+END //
 DELIMITER ;
 
--- ----------------------------
--- GetGoalsByName
--- ----------------------------
-DELIMITER $$
-CREATE PROCEDURE GetGoalsByName(
-    IN p_name_goal VARCHAR(34)
+-- GetGoalsByCourseId Procedure
+DELIMITER //
+CREATE PROCEDURE GetGoalsByCourseId(
+    IN p_id_course INT
 )
 BEGIN
-    SELECT * FROM tbl_goals
-    WHERE name_goal LIKE CONCAT('%', p_name_goal, '%');
-END $$
+    SELECT id_goal, name_goal
+    FROM tbl_goals
+    WHERE id_course = p_id_course
+      AND status = TRUE;
+END //
 DELIMITER ;
 
--- ----------------------------
--- DeleteGoal
--- ----------------------------
-DELIMITER $$
-CREATE PROCEDURE DeleteGoal(
-    IN p_id_goal INT
-)
+-- DeleteGoalById (Soft Delete) Procedure
+DELIMITER //
+CREATE PROCEDURE DeleteGoalById(IN p_id_goal INT)
 BEGIN
-    DELETE FROM tbl_goals
+    UPDATE tbl_goals
+    SET status = FALSE
     WHERE id_goal = p_id_goal;
-END $$
+END //
 DELIMITER ;
 
-:::::::::::::::TABLE LESSON:::::::::::::::
--- Eliminamos la tabla lessons si existe
-DROP TABLE IF EXISTS `Tbl_Lessons`;
+-- Verify Procedures
+SHOW PROCEDURE STATUS WHERE Db = 'scriptpruebas';
 
--- Creamos la tabla Tbl_Lessons
-CREATE TABLE `Tbl_Lessons` (
-  `id_lesson` INT NOT NULL AUTO_INCREMENT,
-  `name_lesson` VARCHAR(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `url_lesson` VARCHAR(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `iframe_lesson` VARCHAR(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `section_id` INT DEFAULT NULL,
-  `platform_id` INT DEFAULT NULL,
-  PRIMARY KEY (`id_lesson`),
-  KEY `platform_id` (`platform_id`)
+-- ----------------------------
+-- Table structure for tbl_images
+-- ----------------------------
+DROP TABLE IF EXISTS tbl_images;
+CREATE TABLE tbl_images (
+  id_image INT NOT NULL AUTO_INCREMENT,
+  url_image VARCHAR(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  imageable_id INT DEFAULT NULL,
+  imageable_type VARCHAR(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  status BOOLEAN DEFAULT TRUE,
+  PRIMARY KEY (id_image)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- ----------------------------
--- Records of Tbl_Lessons
+-- Records of tbl_images
 -- ----------------------------
 BEGIN;
 COMMIT;
 
+-- ----------------------------
+-- Stored Procedures for tbl_images
+-- ----------------------------
 
-DELIMITER $$
-CREATE PROCEDURE InsertLesson(
-    IN p_name_lesson VARCHAR(45),
-    IN p_url_lesson VARCHAR(45),
-    IN p_iframe_lesson VARCHAR(255),
-    IN p_section_id INT,
-    IN p_platform_id INT
+-- InsertImage Procedure
+DELIMITER //
+CREATE PROCEDURE InsertImage(
+    IN p_url_image VARCHAR(45),
+    IN p_imageable_id INT,
+    IN p_imageable_type VARCHAR(45)
 )
 BEGIN
-    INSERT INTO Tbl_Lessons (name_lesson, url_lesson, iframe_lesson, section_id, platform_id)
-    VALUES (p_name_lesson, p_url_lesson, p_iframe_lesson, p_section_id, p_platform_id);
-END $$
+    INSERT INTO tbl_images (url_image, imageable_id, imageable_type, status)
+    VALUES (p_url_image, p_imageable_id, p_imageable_type, TRUE);
+END //
 DELIMITER ;
 
-
-DELIMITER $$
-CREATE PROCEDURE UpdateLesson(
-    IN p_id_lesson INT,
-    IN p_name_lesson VARCHAR(45),
-    IN p_url_lesson VARCHAR(45),
-    IN p_iframe_lesson VARCHAR(255),
-    IN p_section_id INT,
-    IN p_platform_id INT
+-- UpdateImageById Procedure
+DELIMITER //
+CREATE PROCEDURE UpdateImageById(
+    IN p_id_image INT,
+    IN p_url_image VARCHAR(45),
+    IN p_imageable_id INT,
+    IN p_imageable_type VARCHAR(45),
+    IN p_status BOOLEAN
 )
 BEGIN
-    UPDATE Tbl_Lessons
-    SET name_lesson = p_name_lesson,
-        url_lesson = p_url_lesson,
-        iframe_lesson = p_iframe_lesson,
-        section_id = p_section_id,
-        platform_id = p_platform_id
-    WHERE id_lesson = p_id_lesson;
-END $$
+    UPDATE tbl_images
+    SET url_image = p_url_image,
+        imageable_id = p_imageable_id,
+        imageable_type = p_imageable_type,
+        status = p_status
+    WHERE id_image = p_id_image;
+END //
 DELIMITER ;
 
-DELIMITER $$
-CREATE PROCEDURE GetAllLessons()
+-- GetAllImages Procedure
+DELIMITER //
+CREATE PROCEDURE GetAllImages()
 BEGIN
-    SELECT * FROM Tbl_Lessons;
-END $$
+    SELECT id_image, url_image, imageable_id, imageable_type
+    FROM tbl_images
+    WHERE status = TRUE;
+END //
 DELIMITER ;
 
-
-DELIMITER $$
-CREATE PROCEDURE GetLessonsByName(
-    IN p_name_lesson VARCHAR(45)
+-- GetImagesByImageableId Procedure
+DELIMITER //
+CREATE PROCEDURE GetImagesByImageableId(
+    IN p_imageable_id INT,
+    IN p_imageable_type VARCHAR(45)
 )
 BEGIN
-    SELECT * FROM Tbl_Lessons
-    WHERE name_lesson LIKE CONCAT('%', p_name_lesson, '%');
-END $$
+    SELECT id_image, url_image
+    FROM tbl_images
+    WHERE imageable_id = p_imageable_id
+      AND imageable_type = p_imageable_type
+      AND status = TRUE;
+END //
 DELIMITER ;
 
+-- DeleteImageById (Soft Delete) Procedure
+DELIMITER //
+CREATE PROCEDURE DeleteImageById(IN p_id_image INT)
+BEGIN
+    UPDATE tbl_images
+    SET status = FALSE
+    WHERE id_image = p_id_image;
+END //
+DELIMITER ;
 
-DELIMITER $$
-CREATE PROCEDURE DeleteLesson(
+-- Verify Procedures
+SHOW PROCEDURE STATUS WHERE Db = 'scriptpruebas';
+
+
+-- ----------------------------
+-- Table structure for tbl_lesson_user
+-- ----------------------------
+DROP TABLE IF EXISTS tbl_lesson_user;
+CREATE TABLE tbl_lesson_user (
+  id_user INT NOT NULL,
+  id_lesson INT NOT NULL,
+  PRIMARY KEY (id_user, id_lesson),
+  KEY id_lesson (id_lesson),
+  CONSTRAINT tbl_lesson_user_ibfk_1 FOREIGN KEY (id_lesson) REFERENCES tbl_lessons (id_lesson),
+  CONSTRAINT tbl_lesson_user_ibfk_2 FOREIGN KEY (id_user) REFERENCES tbl_users (id_user)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Records of tbl_lesson_user
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Stored Procedures for tbl_lesson_user
+-- ----------------------------
+
+-- InsertLessonUser Procedure
+DELIMITER //
+CREATE PROCEDURE InsertLessonUser(
+    IN p_id_user INT,
     IN p_id_lesson INT
 )
 BEGIN
-    UPDATE Tbl_Lessons
-    SET name_lesson = NULL -- O podrías usar un campo de estado si se necesita
-    WHERE id_lesson = p_id_lesson;
-END $$
-DELIMITER ;
-
-:::::::::::::::::::::::::::::::::::::::::: JAVIER - ABNER :::::::::::::::::::::::::::::::::
--- Eliminamos la tabla users si existe
-DROP TABLE IF EXISTS `users`;
-
--- Creamos la tabla users
-CREATE TABLE `tbl_users` (
-  `id_user` int NOT NULL AUTO_INCREMENT,
-  `name_user` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `email_user` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `password_user` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  PRIMARY KEY (`id_user`),
-  KEY `user_id` (`id_user`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-ALTER TABLE `tbl_users` ADD COLUMN `active` BOOLEAN DEFAULT TRUE;
-
--------------------
-BEGIN;
-COMMIT;
-
-
--- Insert User
-DELIMITER //
-
-CREATE PROCEDURE InsertUser(
-    IN p_name_user VARCHAR(45),
-    IN p_email_user VARCHAR(45),
-    IN p_password_user VARCHAR(45)
-)
-BEGIN
-    INSERT INTO tbl_users (name_user, email_user, password_user, active)
-    VALUES (UPPER(p_name_user), UPPER(p_email_user), (p_password_user), TRUE);
-END //
-
-DELIMITER ;
-
-
--- Update User
-DELIMITER //
-
-CREATE PROCEDURE UpdateUserByName(
-    IN p_name VARCHAR(45),
-    IN p_email VARCHAR(45),
-    IN p_password VARCHAR(45),
-    IN p_active BOOLEAN
-)
-BEGIN
-    UPDATE tbl_users
-    SET email_user = UPPER(p_email), 
-        password_user = UPPER(p_password),  -- Convertir la contraseña a mayúsculas
-        active = p_active
-    WHERE UPPER(name_user) COLLATE utf8mb4_general_ci = UPPER(p_name);
-END //
-
-DELIMITER ;
-
-
-
-
--- Get All Users
-DELIMITER //
-
-CREATE PROCEDURE GetAllUsers()
-BEGIN
-    SELECT name_user, email_user
-    FROM tbl_users
-    WHERE active = TRUE;
-END //
-
-DELIMITER ;
-
--- Get User By Name
-DELIMITER //
-
-CREATE PROCEDURE GetUserByName(IN p_name VARCHAR(45))
-BEGIN
-    SELECT name_user, email_user
-    FROM tbl_users
-    WHERE name_user COLLATE utf8mb4_general_ci LIKE CONCAT('%', p_name, '%') 
-          AND active = TRUE;
-END //
-
-DELIMITER ;
-
--- Delete User By Name
-DELIMITER //
-
-CREATE PROCEDURE DeleteUserByName(IN p_name VARCHAR(45))
-BEGIN
-    UPDATE tbl_users
-    SET active = FALSE
-    WHERE name_user COLLATE utf8mb4_general_ci = p_name; -- Se añadió COLLATE para evitar problemas
-END //
-
-DELIMITER ;
-
-
-
-DROP TABLE IF EXISTS course_user;
-CREATE TABLE course_user (
-  user_id int NOT NULL,
-  course_id int NOT NULL,
-  PRIMARY KEY (user_id,course_id),
-  KEY course_id (course_id),
-  CONSTRAINT course_user_ibfk_1 FOREIGN KEY (user_id) REFERENCES tbl_users (id_user),
-  CONSTRAINT course_user_ibfk_2 FOREIGN KEY (course_id) REFERENCES courses (id_course)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- ----------------------------
--- Records of course_user
--- ----------------------------
-BEGIN;
-COMMIT;
-
-
-
--- :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
--- Table structure for comments
--- Tabla comments (polimorfica)
--- ----------------------------
-DROP TABLE IF EXISTS `tbl_comments`;
-
-CREATE TABLE `tbl_comments` (
-  `id_comment` INT NOT NULL AUTO_INCREMENT,
-  `content` TEXT COLLATE utf8mb4_general_ci NOT NULL, -- Texto del comentario
-  `commentable_id` INT NOT NULL,
-  `commentable_type` VARCHAR(45) COLLATE utf8mb4_general_ci NOT NULL,
-  `id_user` INT DEFAULT NULL,
-  `status` TINYINT(1) DEFAULT 1, -- Estado del comentario: 1 (activo), 0 (inactivo)
-  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Fecha de creación del comentario
-  PRIMARY KEY (`id_comment`),
-  KEY `id_user` (`id_user`),
-  KEY `commentable` (`commentable_id`, `commentable_type`), -- Índice combinado para mejorar el rendimiento
-  CONSTRAINT `comments_ibfk_1` FOREIGN KEY (`id_user`) REFERENCES `tbl_users` (`id_user`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
-
--- ----------------------------
--- Records of comments
--- ----------------------------
-BEGIN;
-COMMIT;
-
---::::::::::::::::::::::::::::::
-
--- PROCEDURE tbl_comments
--- PROCEDURE TABLE tbl_comments
-
--- Procedimiento almacenado para insertar un nuevo comentario
-DELIMITER //
-CREATE PROCEDURE InsertComment(
-    IN p_comment VARCHAR(255),
-    IN p_author VARCHAR(100),
-    IN p_date DATETIME,
-    IN p_commentable_id INT,
-    IN p_commentable_type VARCHAR(45)  -- Nuevo parámetro
-)
-BEGIN
-    INSERT INTO tbl_comments (content, commentable_id, commentable_type, id_user, created_at)
-    VALUES (
-        p_comment, 
-        p_commentable_id, 
-        p_commentable_type,  -- Usar el nuevo parámetro
-        (SELECT id_user FROM tbl_users WHERE name_user COLLATE utf8mb4_general_ci = p_author COLLATE utf8mb4_general_ci), 
-        p_date
-    );
+    INSERT INTO tbl_lesson_user (id_user, id_lesson)
+    VALUES (p_id_user, p_id_lesson);
 END //
 DELIMITER ;
 
-
-
-
--- Procedimiento almacenado para actualizar un comentario existente
+-- DeleteLessonUser Procedure
 DELIMITER //
-CREATE PROCEDURE UpdateComment(
-    IN p_id_comment INT,
-    IN p_content TEXT,
-    IN p_status TINYINT
-)
-BEGIN
-    UPDATE tbl_comments
-    SET content = UPPER(p_content),  -- Convertir el contenido a mayúsculas
-        status = p_status
-    WHERE id_comment = p_id_comment;  -- Asegúrate de que el nombre sea correcto
-END //
-DELIMITER ;
-
--- Procedimiento almacenado para obtener todos los comentarios
-DELIMITER //
-CREATE PROCEDURE GetAllComments()
-BEGIN
-    SELECT * FROM tbl_comments;
-END //
-DELIMITER ;
-
--- Procedimiento almacenado para buscar comentarios por el contenido
-DELIMITER //
-CREATE PROCEDURE GetCommentsByContent(
-    IN p_content VARCHAR(255)
-)
-BEGIN
-    SELECT * FROM tbl_comments
-    WHERE content COLLATE utf8mb4_general_ci LIKE CONCAT('%', UPPER(p_content), '%');  -- Asegúrate de usar la colación correcta
-END //
-DELIMITER ;
-
-
--- Procedimiento almacenado para eliminar un comentario de forma lógica
-DELIMITER //
-CREATE PROCEDURE DeleteComment(
-    IN p_id_comment INT
-)
-BEGIN
-    UPDATE tbl_comments
-    SET status = 0  -- Cambiamos el estado a inactivo
-    WHERE id_comment = p_id_comment;  -- Asegúrate de que el nombre sea correcto
-END //
-DELIMITER ;
-
-
-
--- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
--- ----------------------------
--- Table structure for REVIEWS
--- ----------------------------
-DROP TABLE IF EXISTS `tbl_reviews`;
-
-CREATE TABLE `tbl_reviews` (
-  `id_review` INT NOT NULL AUTO_INCREMENT,
-  `comment_review` TEXT COLLATE utf8mb4_general_ci NOT NULL,  -- Texto de la reseña
-  `rating_review` INT NOT NULL,  -- Valor numérico para la calificación
-  `id_user` INT DEFAULT NULL,
-  `course_id` INT DEFAULT NULL,
-  `status` TINYINT(1) DEFAULT 1,  -- Estado de la reseña: 1 (activa), 0 (inactiva)
-  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- Fecha de creación
-  PRIMARY KEY (`id_review`),
-  KEY `id_user` (`id_user`),
-  KEY `course_id` (`course_id`),
-  CONSTRAINT `reviews_ibfk_1` FOREIGN KEY (`id_user`) REFERENCES `tbl_users` (`id_user`),
-  CONSTRAINT `reviews_ibfk_2` FOREIGN KEY (`course_id`) REFERENCES `tbl_courses` (`id_course`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- :::::::::::::::::::::::
-
--- PROCEDURE tbl_review
--- PROCEDURE TABLE tbl_review
-
--- Procedimiento para insertar una nueva reseña
-DELIMITER $$
-CREATE PROCEDURE InsertReview(
-    IN p_comment_review TEXT,
-    IN p_rating_review INT,
+CREATE PROCEDURE DeleteLessonUser(
     IN p_id_user INT,
-    IN p_course_id INT
+    IN p_id_lesson INT
 )
 BEGIN
-    INSERT INTO tbl_reviews (comment_review, rating_review, id_user, course_id)
-    VALUES (UPPER(p_comment_review), p_rating_review, p_id_user, p_course_id);  -- Convertir a mayúsculas
-END $$
-
+    DELETE FROM tbl_lesson_user
+    WHERE id_user = p_id_user AND id_lesson = p_id_lesson;
+END //
 DELIMITER ;
 
--- Procedimiento para actualizar una reseña existente
-DELIMITER $$
-CREATE PROCEDURE UpdateReview(
-    IN p_id_review INT,
-    IN p_comment_review TEXT,
-    IN p_rating_review INT,
-    IN p_status TINYINT
+-- GetLessonsByUserId Procedure
+DELIMITER //
+CREATE PROCEDURE GetLessonsByUserId(IN p_id_user INT)
+BEGIN
+    SELECT id_lesson
+    FROM tbl_lesson_user
+    WHERE id_user = p_id_user;
+END //
+DELIMITER ;
+
+-- GetUsersByLessonId Procedure
+DELIMITER //
+CREATE PROCEDURE GetUsersByLessonId(IN p_id_lesson INT)
+BEGIN
+    SELECT id_user
+    FROM tbl_lesson_user
+    WHERE id_lesson = p_id_lesson;
+END //
+DELIMITER ;
+
+-- Verify Procedures
+SHOW PROCEDURE STATUS WHERE Db = 'scriptpruebas';
+
+
+-- ----------------------------
+-- Table structure for tbl_lessons
+-- ----------------------------
+DROP TABLE IF EXISTS tbl_lessons;
+CREATE TABLE tbl_lessons (
+  id_lesson INT NOT NULL AUTO_INCREMENT,
+  title_lesson VARCHAR(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  description_lesson VARCHAR(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  status BOOLEAN DEFAULT TRUE,
+  PRIMARY KEY (id_lesson)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Records of tbl_lessons
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Stored Procedures for tbl_lessons
+-- ----------------------------
+
+-- InsertLesson Procedure
+DELIMITER //
+CREATE PROCEDURE InsertLesson(
+    IN p_title_lesson VARCHAR(45),
+    IN p_description_lesson VARCHAR(255)
 )
 BEGIN
-    UPDATE tbl_reviews
-    SET comment_review = UPPER(p_comment_review),  -- Convertir a mayúsculas
-        rating_review = p_rating_review,
-        status = p_status 
-    WHERE id_review = p_id_review;  -- Asegúrate de que el nombre sea correcto
-END $$
-
+    INSERT INTO tbl_lessons (title_lesson, description_lesson, status)
+    VALUES (p_title_lesson, p_description_lesson, TRUE);
+END //
 DELIMITER ;
 
--- Procedimiento para buscar reseñas por comentario
-DELIMITER $$
-CREATE PROCEDURE GetReviewsByComment(
-    IN p_comment VARCHAR(255)
+-- UpdateLessonById Procedure
+DELIMITER //
+CREATE PROCEDURE UpdateLessonById(
+    IN p_id_lesson INT,
+    IN p_title_lesson VARCHAR(45),
+    IN p_description_lesson VARCHAR(255),
+    IN p_status BOOLEAN
 )
 BEGIN
-    SELECT * FROM tbl_reviews
-    WHERE comment_review COLLATE utf8mb4_general_ci LIKE CONCAT('%', UPPER(p_comment), '%');  -- Convertir a mayúsculas para la búsqueda
-END $$
+    UPDATE tbl_lessons
+    SET title_lesson = p_title_lesson,
+        description_lesson = p_description_lesson,
+        status = p_status
+    WHERE id_lesson = p_id_lesson;
+END //
 DELIMITER ;
 
--- Procedimiento para eliminar una reseña (de forma lógica)
-DELIMITER $$
-CREATE PROCEDURE DeleteReview(
-    IN p_id_review INT
+-- GetAllLessons Procedure
+DELIMITER //
+CREATE PROCEDURE GetAllLessons()
+BEGIN
+    SELECT id_lesson, title_lesson, description_lesson
+    FROM tbl_lessons
+    WHERE status = TRUE;
+END //
+DELIMITER ;
+
+-- GetLessonById Procedure
+DELIMITER //
+CREATE PROCEDURE GetLessonById(IN p_id_lesson INT)
+BEGIN
+    SELECT id_lesson, title_lesson, description_lesson
+    FROM tbl_lessons
+    WHERE id_lesson = p_id_lesson AND status = TRUE;
+END //
+DELIMITER ;
+
+-- DeleteLessonById (Soft Delete) Procedure
+DELIMITER //
+CREATE PROCEDURE DeleteLessonById(IN p_id_lesson INT)
+BEGIN
+    UPDATE tbl_lessons
+    SET status = FALSE
+    WHERE id_lesson = p_id_lesson;
+END //
+DELIMITER ;
+
+-- Verify Procedures
+SHOW PROCEDURE STATUS WHERE Db = 'scriptpruebas';
+
+
+-- ----------------------------
+-- Table structure for tbl_levels
+-- ----------------------------
+DROP TABLE IF EXISTS tbl_levels;
+CREATE TABLE tbl_levels (
+  id_level INT NOT NULL AUTO_INCREMENT,
+  name_level VARCHAR(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  status BOOLEAN DEFAULT TRUE,
+  PRIMARY KEY (id_level)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Records of tbl_levels
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Stored Procedures for tbl_levels
+-- ----------------------------
+
+-- InsertLevel Procedure
+DELIMITER //
+CREATE PROCEDURE InsertLevel(
+    IN p_name_level VARCHAR(45)
 )
 BEGIN
-    UPDATE tbl_reviews
-    SET status = 0  -- Cambiar el estado a inactivo
-    WHERE id_review = p_id_review;  -- Asegúrate de que el nombre sea correcto
-END $$
-
+    INSERT INTO tbl_levels (name_level, status)
+    VALUES (p_name_level, TRUE);
+END //
 DELIMITER ;
 
+-- UpdateLevelById Procedure
+DELIMITER //
+CREATE PROCEDURE UpdateLevelById(
+    IN p_id_level INT,
+    IN p_name_level VARCHAR(45),
+    IN p_status BOOLEAN
+)
+BEGIN
+    UPDATE tbl_levels
+    SET name_level = p_name_level,
+        status = p_status
+    WHERE id_level = p_id_level;
+END //
+DELIMITER ;
 
-:::::::::::::::::::::TABLA DE REQUIREMENTS ::::::::::::::::::::::
+-- GetAllLevels Procedure
+DELIMITER //
+CREATE PROCEDURE GetAllLevels()
+BEGIN
+    SELECT id_level, name_level
+    FROM tbl_levels
+    WHERE status = TRUE;
+END //
+DELIMITER ;
 
-USE db_umg;
+-- GetLevelById Procedure
+DELIMITER //
+CREATE PROCEDURE GetLevelById(IN p_id_level INT)
+BEGIN
+    SELECT id_level, name_level
+    FROM tbl_levels
+    WHERE id_level = p_id_level AND status = TRUE;
+END //
+DELIMITER ;
 
--- Eliminamos la tabla tbl_requirements si existe
-DROP TABLE IF EXISTS `tbl_requirements`;
+-- DeleteLevelById (Soft Delete) Procedure
+DELIMITER //
+CREATE PROCEDURE DeleteLevelById(IN p_id_level INT)
+BEGIN
+    UPDATE tbl_levels
+    SET status = FALSE
+    WHERE id_level = p_id_level;
+END //
+DELIMITER ;
 
--- Creamos la tabla tbl_requirements
-CREATE TABLE `tbl_requirements` (
-  `id_requirement` INT NOT NULL AUTO_INCREMENT,
-  `name_requirement` VARCHAR(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `course_id` INT NOT NULL,
-  PRIMARY KEY (`id_requirement`),
-  KEY `course_id` (`course_id`),
-  CONSTRAINT `requirements_ibfk_1` FOREIGN KEY (`course_id`) REFERENCES `tbl_courses` (`id_course`)
+-- Verify Procedures
+SHOW PROCEDURE STATUS WHERE Db = 'scriptpruebas';
+
+
+-- ----------------------------
+-- Table structure for tbl_likes
+-- ----------------------------
+DROP TABLE IF EXISTS tbl_likes;
+CREATE TABLE tbl_likes (
+  id_like INT NOT NULL AUTO_INCREMENT,
+  likeable_id INT DEFAULT NULL,
+  likeable_type VARCHAR(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  id_user INT DEFAULT NULL,
+  status BOOLEAN DEFAULT TRUE,
+  PRIMARY KEY (id_like),
+  KEY id_user (id_user),
+  CONSTRAINT tbl_likes_ibfk_1 FOREIGN KEY (id_user) REFERENCES tbl_users (id_user)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Records of tbl_likes
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Stored Procedures for tbl_likes
+-- ----------------------------
+
+-- InsertLike Procedure
+DELIMITER //
+CREATE PROCEDURE InsertLike(
+    IN p_likeable_id INT,
+    IN p_likeable_type VARCHAR(45),
+    IN p_id_user INT
+)
+BEGIN
+    INSERT INTO tbl_likes (likeable_id, likeable_type, id_user, status)
+    VALUES (p_likeable_id, p_likeable_type, p_id_user, TRUE);
+END //
+DELIMITER ;
+
+-- UpdateLikeById Procedure
+DELIMITER //
+CREATE PROCEDURE UpdateLikeById(
+    IN p_id_like INT,
+    IN p_likeable_id INT,
+    IN p_likeable_type VARCHAR(45),
+    IN p_status BOOLEAN
+)
+BEGIN
+    UPDATE tbl_likes
+    SET likeable_id = p_likeable_id,
+        likeable_type = p_likeable_type,
+        status = p_status
+    WHERE id_like = p_id_like;
+END //
+DELIMITER ;
+
+-- GetAllLikes Procedure
+DELIMITER //
+CREATE PROCEDURE GetAllLikes()
+BEGIN
+    SELECT id_like, likeable_id, likeable_type, id_user
+    FROM tbl_likes
+    WHERE status = TRUE;
+END //
+DELIMITER ;
+
+-- GetLikesByUserId Procedure
+DELIMITER //
+CREATE PROCEDURE GetLikesByUserId(IN p_id_user INT)
+BEGIN
+    SELECT id_like, likeable_id, likeable_type
+    FROM tbl_likes
+    WHERE id_user = p_id_user AND status = TRUE;
+END //
+DELIMITER ;
+
+-- DeleteLikeById (Soft Delete) Procedure
+DELIMITER //
+CREATE PROCEDURE DeleteLikeById(IN p_id_like INT)
+BEGIN
+    UPDATE tbl_likes
+    SET status = FALSE
+    WHERE id_like = p_id_like;
+END //
+DELIMITER ;
+
+-- Verify Procedures
+SHOW PROCEDURE STATUS WHERE Db = 'scriptpruebas';
+
+
+-- ----------------------------
+-- Table structure for tbl_platforms
+-- ----------------------------
+DROP TABLE IF EXISTS tbl_platforms;
+CREATE TABLE tbl_platforms (
+  id_platform INT NOT NULL AUTO_INCREMENT,
+  name_platform VARCHAR(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  status BOOLEAN DEFAULT TRUE,
+  PRIMARY KEY (id_platform)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Records of tbl_platforms
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Stored Procedures for tbl_platforms
+-- ----------------------------
+
+-- InsertPlatform Procedure
+DELIMITER //
+CREATE PROCEDURE InsertPlatform(
+    IN p_name_platform VARCHAR(45)
+)
+BEGIN
+    INSERT INTO tbl_platforms (name_platform, status)
+    VALUES (p_name_platform, TRUE);
+END //
+DELIMITER ;
+
+-- UpdatePlatformById Procedure
+DELIMITER //
+CREATE PROCEDURE UpdatePlatformById(
+    IN p_id_platform INT,
+    IN p_name_platform VARCHAR(45),
+    IN p_status BOOLEAN
+)
+BEGIN
+    UPDATE tbl_platforms
+    SET name_platform = p_name_platform,
+        status = p_status
+    WHERE id_platform = p_id_platform;
+END //
+DELIMITER ;
+
+-- GetAllPlatforms Procedure
+DELIMITER //
+CREATE PROCEDURE GetAllPlatforms()
+BEGIN
+    SELECT id_platform, name_platform
+    FROM tbl_platforms
+    WHERE status = TRUE;
+END //
+DELIMITER ;
+
+-- GetPlatformById Procedure
+DELIMITER //
+CREATE PROCEDURE GetPlatformById(IN p_id_platform INT)
+BEGIN
+    SELECT id_platform, name_platform
+    FROM tbl_platforms
+    WHERE id_platform = p_id_platform AND status = TRUE;
+END //
+DELIMITER ;
+
+-- DeletePlatformById (Soft Delete) Procedure
+DELIMITER //
+CREATE PROCEDURE DeletePlatformById(IN p_id_platform INT)
+BEGIN
+    UPDATE tbl_platforms
+    SET status = FALSE
+    WHERE id_platform = p_id_platform;
+END //
+DELIMITER ;
+
+-- Verify Procedures
+SHOW PROCEDURE STATUS WHERE Db = 'scriptpruebas';
+
+-- ----------------------------
+-- Table structure for tbl_prices
+-- ----------------------------
+DROP TABLE IF EXISTS tbl_prices;
+CREATE TABLE tbl_prices (
+  id_price INT NOT NULL AUTO_INCREMENT,
+  value_price DECIMAL(10,2) DEFAULT NULL,
+  status BOOLEAN DEFAULT TRUE,
+  PRIMARY KEY (id_price)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Records of tbl_prices
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Stored Procedures for tbl_prices
+-- ----------------------------
+
+-- InsertPrice Procedure
+DELIMITER //
+CREATE PROCEDURE InsertPrice(
+    IN p_value_price DECIMAL(10,2)
+)
+BEGIN
+    INSERT INTO tbl_prices (value_price, status)
+    VALUES (p_value_price, TRUE);
+END //
+DELIMITER ;
+
+-- UpdatePriceById Procedure
+DELIMITER //
+CREATE PROCEDURE UpdatePriceById(
+    IN p_id_price INT,
+    IN p_value_price DECIMAL(10,2),
+    IN p_status BOOLEAN
+)
+BEGIN
+    UPDATE tbl_prices
+    SET value_price = p_value_price,
+        status = p_status
+    WHERE id_price = p_id_price;
+END //
+DELIMITER ;
+
+-- GetAllPrices Procedure
+DELIMITER //
+CREATE PROCEDURE GetAllPrices()
+BEGIN
+    SELECT id_price, value_price
+    FROM tbl_prices
+    WHERE status = TRUE;
+END //
+DELIMITER ;
+
+-- GetPriceById Procedure
+DELIMITER //
+CREATE PROCEDURE GetPriceById(IN p_id_price INT)
+BEGIN
+    SELECT id_price, value_price
+    FROM tbl_prices
+    WHERE id_price = p_id_price AND status = TRUE;
+END //
+DELIMITER ;
+
+-- DeletePriceById (Soft Delete) Procedure
+DELIMITER //
+CREATE PROCEDURE DeletePriceById(IN p_id_price INT)
+BEGIN
+    UPDATE tbl_prices
+    SET status = FALSE
+    WHERE id_price = p_id_price;
+END //
+DELIMITER ;
+
+-- Verify Procedures
+SHOW PROCEDURE STATUS WHERE Db = 'scriptpruebas';
+
+-- ----------------------------
+-- Table structure for tbl_profiles
+-- ----------------------------
+DROP TABLE IF EXISTS tbl_profiles;
+CREATE TABLE tbl_profiles (
+  id_profile INT NOT NULL AUTO_INCREMENT,
+  description_profile VARCHAR(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  id_user INT DEFAULT NULL,
+  status BOOLEAN DEFAULT TRUE,
+  PRIMARY KEY (id_profile),
+  KEY id_user (id_user),
+  CONSTRAINT tbl_profiles_ibfk_1 FOREIGN KEY (id_user) REFERENCES tbl_users (id_user)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Records of tbl_profiles
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Stored Procedures for tbl_profiles
+-- ----------------------------
+
+-- InsertProfile Procedure
+DELIMITER //
+CREATE PROCEDURE InsertProfile(
+    IN p_description_profile VARCHAR(45),
+    IN p_id_user INT
+)
+BEGIN
+    INSERT INTO tbl_profiles (description_profile, id_user, status)
+    VALUES (p_description_profile, p_id_user, TRUE);
+END //
+DELIMITER ;
+
+-- UpdateProfileById Procedure
+DELIMITER //
+CREATE PROCEDURE UpdateProfileById(
+    IN p_id_profile INT,
+    IN p_description_profile VARCHAR(45),
+    IN p_id_user INT,
+    IN p_status BOOLEAN
+)
+BEGIN
+    UPDATE tbl_profiles
+    SET description_profile = p_description_profile,
+        id_user = p_id_user,
+        status = p_status
+    WHERE id_profile = p_id_profile;
+END //
+DELIMITER ;
+
+-- GetAllProfiles Procedure
+DELIMITER //
+CREATE PROCEDURE GetAllProfiles()
+BEGIN
+    SELECT id_profile, description_profile, id_user
+    FROM tbl_profiles
+    WHERE status = TRUE;
+END //
+DELIMITER ;
+
+-- GetProfileById Procedure
+DELIMITER //
+CREATE PROCEDURE GetProfileById(IN p_id_profile INT)
+BEGIN
+    SELECT id_profile, description_profile, id_user
+    FROM tbl_profiles
+    WHERE id_profile = p_id_profile AND status = TRUE;
+END //
+DELIMITER ;
+
+-- DeleteProfileById (Soft Delete) Procedure
+DELIMITER //
+CREATE PROCEDURE DeleteProfileById(IN p_id_profile INT)
+BEGIN
+    UPDATE tbl_profiles
+    SET status = FALSE
+    WHERE id_profile = p_id_profile;
+END //
+DELIMITER ;
+
+-- Verify Procedures
+SHOW PROCEDURE STATUS WHERE Db = 'scriptpruebas';
+
+-- ----------------------------
+-- Table structure for tbl_requirements
+-- ----------------------------
+DROP TABLE IF EXISTS tbl_requirements;
+CREATE TABLE tbl_requirements (
+  id_requirement INT NOT NULL AUTO_INCREMENT,
+  name_requirement VARCHAR(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  id_course INT NOT NULL,
+  status BOOLEAN DEFAULT TRUE,
+  PRIMARY KEY (id_requirement),
+  KEY id_course (id_course),
+  CONSTRAINT tbl_requirements_ibfk_1 FOREIGN KEY (id_course) REFERENCES tbl_courses (id_course)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- ----------------------------
@@ -687,516 +1292,355 @@ CREATE TABLE `tbl_requirements` (
 BEGIN;
 COMMIT;
 
-::::::::::::::::::::PROCEDIMIENTOS ALMACENADOS ::::::::::::::::::::::::::
-::::::::InsertRequirement::::::::::::::::::::::::
-DELIMITER $$
+-- ----------------------------
+-- Stored Procedures for tbl_requirements
+-- ----------------------------
+
+-- InsertRequirement Procedure
+DELIMITER //
 CREATE PROCEDURE InsertRequirement(
     IN p_name_requirement VARCHAR(45),
-    IN p_course_id INT
+    IN p_id_course INT
 )
 BEGIN
-    INSERT INTO tbl_requirements (name_requirement, course_id)
-    VALUES (p_name_requirement, p_course_id);
-END $$
+    INSERT INTO tbl_requirements (name_requirement, id_course, status)
+    VALUES (p_name_requirement, p_id_course, TRUE);
+END //
 DELIMITER ;
 
-:::::::::UpdateRequirement::::::::::::::::::
-DELIMITER $$
-CREATE PROCEDURE UpdateRequirement(
+-- UpdateRequirementById Procedure
+DELIMITER //
+CREATE PROCEDURE UpdateRequirementById(
     IN p_id_requirement INT,
     IN p_name_requirement VARCHAR(45),
-    IN p_course_id INT
+    IN p_id_course INT,
+    IN p_status BOOLEAN
 )
 BEGIN
     UPDATE tbl_requirements
     SET name_requirement = p_name_requirement,
-        course_id = p_course_id
+        id_course = p_id_course,
+        status = p_status
     WHERE id_requirement = p_id_requirement;
-END $$
+END //
 DELIMITER ;
 
-::::::::::GetAllRequirements:::::::::::::::::
-DELIMITER $$
+-- GetAllRequirements Procedure
+DELIMITER //
 CREATE PROCEDURE GetAllRequirements()
 BEGIN
-    SELECT * FROM tbl_requirements;
-END $$
+    SELECT id_requirement, name_requirement, id_course
+    FROM tbl_requirements
+    WHERE status = TRUE;
+END //
 DELIMITER ;
 
-::::::::::GetRequirementsByName:::::::::::::::
-DELIMITER $$
-CREATE PROCEDURE GetRequirementsByName(
-    IN p_name_requirement VARCHAR(45)
-)
+-- GetRequirementById Procedure
+DELIMITER //
+CREATE PROCEDURE GetRequirementById(IN p_id_requirement INT)
 BEGIN
-    SELECT * FROM tbl_requirements
-    WHERE name_requirement LIKE CONCAT('%', p_name_requirement, '%');
-END $$
+    SELECT id_requirement, name_requirement, id_course
+    FROM tbl_requirements
+    WHERE id_requirement = p_id_requirement AND status = TRUE;
+END //
 DELIMITER ;
 
-::::::::::DeleteRequirement::::::::::::::::
-DELIMITER $$
-CREATE PROCEDURE DeleteRequirement(
-    IN p_id_requirement INT
-)
+-- DeleteRequirementById (Soft Delete) Procedure
+DELIMITER //
+CREATE PROCEDURE DeleteRequirementById(IN p_id_requirement INT)
 BEGIN
     UPDATE tbl_requirements
-    SET active = FALSE
+    SET status = FALSE
     WHERE id_requirement = p_id_requirement;
-END $$
-DELIMITER ;
-:::::::::::::::::::::::::::::::::::::::::::
-
-::::::::::::::::::::::::TABLA DE PRICES :::::::::::::::::::::::::::::::::
-
--- Eliminamos la tabla prices si existe
-DROP TABLE IF EXISTS `Tbl_Prices`;
-
--- Creamos la tabla Tbl_Prices
-CREATE TABLE `Tbl_Prices` (
-  `id_price` INT NOT NULL AUTO_INCREMENT,
-  `amount_price` DECIMAL(10,2) DEFAULT NULL,
-  `status` TINYINT(1) DEFAULT 1, -- Estado del precio: 1 (activo), 0 (inactivo)
-  PRIMARY KEY (`id_price`),
-  CONSTRAINT `price_id` FOREIGN KEY (`id_price`) REFERENCES `courses` (`id_course`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
-:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-:::::::::InsertPrice::::::::::::::::
-
-DELIMITER $$
-CREATE PROCEDURE InsertPrice(
-    IN p_amount_price DECIMAL(10,2)
-)
-BEGIN
-    INSERT INTO Tbl_Prices (amount_price, status)
-    VALUES (p_amount_price, 1);
-END $$
-DELIMITER ;
-
-::::::::::UpdatePrice::::::::::::::
-DELIMITER $$
-CREATE PROCEDURE UpdatePrice(
-    IN p_id_price INT,
-    IN p_amount_price DECIMAL(10,2),
-    IN p_status TINYINT
-)
-BEGIN
-    UPDATE Tbl_Prices
-    SET amount_price = p_amount_price,
-        status = p_status
-    WHERE id_price = p_id_price;
-END $$
-DELIMITER ;
-
-::::::::::GetAllPrices::::::::::::::
-DELIMITER $$
-CREATE PROCEDURE GetAllPrices()
-BEGIN
-    SELECT * FROM Tbl_Prices
-    WHERE status = 1;
-END $$
-DELIMITER ;
-::::::::::::::::::::::::::::::::::::
-
-:::::::GetPricesByAmount::::::::::::
-DELIMITER $$
-CREATE PROCEDURE GetPricesByAmount(
-    IN p_amount DECIMAL(10,2)
-)
-BEGIN
-    SELECT * FROM Tbl_Prices
-    WHERE amount_price = p_amount AND status = 1;
-END $$
-DELIMITER ;
-:::::::::::::::::::::::::::::::::::
-
-:::::::::DeletePrices::::::::::::::
-DELIMITER $$
-CREATE PROCEDURE DeletePrice(
-    IN p_id_price INT
-)
-BEGIN
-    UPDATE Tbl_Prices
-    SET status = 0 -- Cambiamos el estado a inactivo
-    WHERE id_price = p_id_price;
-END $$
-DELIMITER ;
-:::::::::::::::::::::::::::::::::::
-
-:::::::::Ejemplos de insersion de datos::::::::::::::
--- Insertamos un precio de ejemplo
-CALL InsertPrice(150.00);
-
--- Actualizamos un precio existente (ejemplo con id 1)
-CALL UpdatePrice(1, 175.00, 1);
-
--- Obtenemos todos los precios activos
-CALL GetAllPrices();
-
--- Buscamos precios por monto específico (ejemplo 150.00)
-CALL GetPricesByAmount(150.00);
-
--- Eliminamos un precio de forma lógica (ejemplo con id 1)
-CALL DeletePrice(1);
-
-:::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-aqui comienza el otro
-----------------------------------------------------------------
--------------------- TABLA IMAGES YEINER -----------------------
-----------------------------------------------------------------
-USE db_umg;
-
--- Eliminamos la tabla images si existe----
-DROP TABLE IF EXISTS `tbl_images`;
-
--- Creamos la tabla images normalizada----
-CREATE TABLE `tbl_images` (
-  `id_image` INT NOT NULL AUTO_INCREMENT,
-  `url_image` VARCHAR(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `imageable_id` INT NOT NULL,
-  `imageable_type` VARCHAR(45) COLLATE utf8mb4_general_ci NOT NULL,
-  `status` TINYINT(1) DEFAULT 1, -- Estado de la imagen: 1 (activo), 0 (inactivo)
-  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id_image`),
-  KEY `imageable` (`imageable_id`, `imageable_type`) -- Índice para mejorar la consulta
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-----------------------------------------------------------
--- Procedimientos almacenados para la tabla tbl_images----
-----------------------------------------------------------
-
--- Procedimiento para insertar una nueva imagen
-DELIMITER //
-CREATE PROCEDURE InsertImage(
-    IN p_url_image VARCHAR(255),
-    IN p_imageable_id INT,
-    IN p_imageable_type VARCHAR(45)
-)
-BEGIN
-    INSERT INTO tbl_images (url_image, imageable_id, imageable_type, status, created_at)
-    VALUES (p_url_image, p_imageable_id, UPPER(p_imageable_type), 1, NOW());
 END //
 DELIMITER ;
 
--- Procedimiento para actualizar una imagen existente
-DELIMITER //
-CREATE PROCEDURE UpdateImage(
-    IN p_id_image INT,
-    IN p_url_image VARCHAR(255),
-    IN p_imageable_id INT,
-    IN p_imageable_type VARCHAR(45),
-    IN p_status TINYINT
-)
-BEGIN
-    UPDATE tbl_images
-    SET url_image = p_url_image,
-        imageable_id = p_imageable_id,
-        imageable_type = UPPER(p_imageable_type),
-        status = p_status
-    WHERE id_image = p_id_image;
-END //
-DELIMITER ;
-
--- Procedimiento para obtener todas las imágenes activas
-DELIMITER //
-CREATE PROCEDURE GetAllActiveImages()
-BEGIN
-    SELECT * FROM tbl_images
-    WHERE status = 1;
-END //
-DELIMITER ;
-
--- Procedimiento para buscar imágenes por tipo de contenido
-DELIMITER //
-CREATE PROCEDURE GetImagesByType(
-    IN p_imageable_type VARCHAR(45)
-)
-BEGIN
-    SELECT * FROM tbl_images
-    WHERE imageable_type = UPPER(p_imageable_type) AND status = 1;
-END //
-DELIMITER ;
-
--- Procedimiento para eliminar una imagen de forma lógica
-DELIMITER //
-CREATE PROCEDURE DeleteImage(
-    IN p_id_image INT
-)
-BEGIN
-    UPDATE tbl_images
-    SET status = 0 -- Cambiar el estado a inactivo
-    WHERE id_image = p_id_image;
-END //
-DELIMITER ;
---------------------------------------------------------------------------------
-----------------------------TABLA LIKES YEINER  --------------------------------
---------------------------------------------------------------------------------
-
--- Eliminamos la tabla likes si existe
-DROP TABLE IF EXISTS `tbl_likes`;
-
--- Creamos la tabla likes normalizada
-CREATE TABLE `tbl_likes` (
-  `id_like` INT NOT NULL AUTO_INCREMENT,
-  `value` TINYINT(1) DEFAULT 1, -- Valor del "like" o "dislike"
-  `likeable_id` INT NOT NULL, -- ID del elemento que recibe el like
-  `likeable_type` VARCHAR(45) COLLATE utf8mb4_general_ci NOT NULL, -- Tipo del elemento
-  `user_id` INT NOT NULL, -- ID del usuario que da el like
-  `status` TINYINT(1) DEFAULT 1, -- Estado del "like": 1 (activo), 0 (inactivo)
-  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id_like`),
-  KEY `user_id` (`user_id`),
-  KEY `likeable` (`likeable_id`, `likeable_type`), -- Índice combinado para consultas rápidas
-  CONSTRAINT `likes_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `tbl_users` (`id_user`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
----------------------------------------------------------
--- Procedimientos almacenados para la tabla tbl_likes----
----------------------------------------------------------
-
--- Procedimiento para insertar un nuevo like
-DELIMITER //
-CREATE PROCEDURE InsertLike(
-    IN p_value TINYINT,
-    IN p_likeable_id INT,
-    IN p_likeable_type VARCHAR(45),
-    IN p_user_id INT
-)
-BEGIN
-    INSERT INTO tbl_likes (value, likeable_id, likeable_type, user_id, status, created_at)
-    VALUES (p_value, p_likeable_id, UPPER(p_likeable_type), p_user_id, 1, NOW());
-END //
-DELIMITER ;
-
--- Procedimiento para actualizar un like existente
-DELIMITER //
-CREATE PROCEDURE UpdateLike(
-    IN p_id_like INT,
-    IN p_value TINYINT,
-    IN p_status TINYINT
-)
-BEGIN
-    UPDATE tbl_likes
-    SET value = p_value,
-        status = p_status
-    WHERE id_like = p_id_like;
-END //
-DELIMITER ;
-
--- Procedimiento para obtener todos los likes activos
-DELIMITER //
-CREATE PROCEDURE GetAllActiveLikes()
-BEGIN
-    SELECT * FROM tbl_likes
-    WHERE status = 1;
-END //
-DELIMITER ;
-
--- Procedimiento para buscar likes por tipo de contenido
-DELIMITER //
-CREATE PROCEDURE GetLikesByType(
-    IN p_likeable_type VARCHAR(45)
-)
-BEGIN
-    SELECT * FROM tbl_likes
-    WHERE likeable_type = UPPER(p_likeable_type) AND status = 1;
-END //
-DELIMITER ;
-
--- Procedimiento para eliminar un like de forma lógica
-DELIMITER //
-CREATE PROCEDURE DeleteLike(
-    IN p_id_like INT
-)
-BEGIN
-    UPDATE tbl_likes
-    SET status = 0 -- Cambiar el estado a inactivo
-    WHERE id_like = p_id_like;
-END //
-DELIMITER ;
-
-
+-- Verify Procedures
+SHOW PROCEDURE STATUS WHERE Db = 'scriptpruebas';
 
 -- ----------------------------
--- Create tbl_lesson_user table
+-- Table structure for tbl_resources
+-- ----------------------------
+DROP TABLE IF EXISTS `tbl_resources`;
+CREATE TABLE `tbl_resources` (
+  `id_resource` int NOT NULL AUTO_INCREMENT,
+  `url_resource` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `id_lesson` int DEFAULT NULL,
+  `status` boolean DEFAULT true,
+  PRIMARY KEY (`id_resource`),
+  KEY `id_lesson` (`id_lesson`),
+  CONSTRAINT `tbl_resources_ibfk_1` FOREIGN KEY (`id_lesson`) REFERENCES `tbl_lessons` (`id_lesson`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Records of tbl_resources
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Table structure for tbl_reviews
+-- ----------------------------
+DROP TABLE IF EXISTS tbl_reviews;
+CREATE TABLE tbl_reviews (
+  id_review INT NOT NULL AUTO_INCREMENT,
+  rating INT DEFAULT NULL,
+  comment VARCHAR(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  id_user INT DEFAULT NULL,
+  id_course INT DEFAULT NULL,
+  status BOOLEAN DEFAULT TRUE,
+  PRIMARY KEY (id_review),
+  KEY id_course (id_course),
+  KEY id_user (id_user),
+  CONSTRAINT tbl_reviews_ibfk_1 FOREIGN KEY (id_user) REFERENCES tbl_users (id_user),
+  CONSTRAINT tbl_reviews_ibfk_2 FOREIGN KEY (id_course) REFERENCES tbl_courses (id_course)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Records of tbl_reviews
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
+-- Stored Procedures for tbl_reviews
 -- ----------------------------
 
-CREATE TABLE tbl_lesson_user (
-    id_lesson_user INT NOT NULL AUTO_INCREMENT,
-    id_user INT NOT NULL,
-    id_lesson INT NOT NULL,
-    PRIMARY KEY (id_lesson_user),
-    KEY id_user (id_user),
-    KEY id_lesson (id_lesson)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
-
-----------------------------------------------------------
--- Procedimientos almacenados para la tabla tbl_lesson_user----
-----------------------------------------------------------
--- Drop existing table if necessary
-DROP TABLE IF EXISTS tbl_lesson_user;
-
--- Create tbl_lesson_user table
-CREATE TABLE tbl_lesson_user (
-    id_lesson_user INT NOT NULL AUTO_INCREMENT,
-    id_user INT NOT NULL,
-    id_lesson INT NOT NULL,
-    PRIMARY KEY (id_lesson_user),
-    KEY id_user (id_user),
-    KEY id_lesson (id_lesson)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- Insert Lesson_User
+-- InsertReview Procedure
 DELIMITER //
-CREATE PROCEDURE InsertLessonUser(
+CREATE PROCEDURE InsertReview(
+    IN p_rating INT,
+    IN p_comment VARCHAR(255),
     IN p_id_user INT,
-    IN p_id_lesson INT
+    IN p_id_course INT
 )
 BEGIN
-    INSERT INTO tbl_lesson_user (id_user, id_lesson) VALUES (p_id_user, p_id_lesson);
+    INSERT INTO tbl_reviews (rating, comment, id_user, id_course, status)
+    VALUES (p_rating, p_comment, p_id_user, p_id_course, TRUE);
 END //
 DELIMITER ;
 
--- Update Lesson_User by ID
+-- UpdateReviewById Procedure
 DELIMITER //
-CREATE PROCEDURE UpdateLessonUserById(
-    IN p_id_lesson_user INT,
+CREATE PROCEDURE UpdateReviewById(
+    IN p_id_review INT,
+    IN p_rating INT,
+    IN p_comment VARCHAR(255),
     IN p_id_user INT,
-    IN p_id_lesson INT
+    IN p_id_course INT,
+    IN p_status BOOLEAN
 )
 BEGIN
-    UPDATE tbl_lesson_user
-    SET id_user = p_id_user, id_lesson = p_id_lesson
-    WHERE id_lesson_user = p_id_lesson_user;
+    UPDATE tbl_reviews
+    SET rating = p_rating,
+        comment = p_comment,
+        id_user = p_id_user,
+        id_course = p_id_course,
+        status = p_status
+    WHERE id_review = p_id_review;
 END //
 DELIMITER ;
 
--- Get All Lesson_Users
+-- GetAllReviews Procedure
 DELIMITER //
-CREATE PROCEDURE GetAllLessonUsers()
+CREATE PROCEDURE GetAllReviews()
 BEGIN
-    SELECT * FROM tbl_lesson_user;
+    SELECT id_review, rating, comment, id_user, id_course
+    FROM tbl_reviews
+    WHERE status = TRUE;
 END //
 DELIMITER ;
 
--- Get Lesson_User by ID
+-- GetReviewById Procedure
 DELIMITER //
-CREATE PROCEDURE GetLessonUserById(IN p_id_lesson_user INT)
+CREATE PROCEDURE GetReviewById(IN p_id_review INT)
 BEGIN
-    SELECT * FROM tbl_lesson_user WHERE id_lesson_user = p_id_lesson_user;
+    SELECT id_review, rating, comment, id_user, id_course
+    FROM tbl_reviews
+    WHERE id_review = p_id_review AND status = TRUE;
 END //
 DELIMITER ;
 
--- Delete Lesson_User by ID
+-- DeleteReviewById (Soft Delete) Procedure
 DELIMITER //
-CREATE PROCEDURE DeleteLessonUserById(IN p_id_lesson_user INT)
+CREATE PROCEDURE DeleteReviewById(IN p_id_review INT)
 BEGIN
-    DELETE FROM tbl_lesson_user WHERE id_lesson_user = p_id_lesson_user;
+    UPDATE tbl_reviews
+    SET status = FALSE
+    WHERE id_review = p_id_review;
 END //
 DELIMITER ;
 
+-- Verify Procedures
+SHOW PROCEDURE STATUS WHERE Db = 'scriptpruebas';
 
+-- ----------------------------
+-- Table structure for tbl_sections
+-- ----------------------------
+DROP TABLE IF EXISTS tbl_sections;
+CREATE TABLE tbl_sections (
+  id_section INT NOT NULL AUTO_INCREMENT,
+  name_section VARCHAR(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  id_course INT NOT NULL,
+  status BOOLEAN DEFAULT TRUE,
+  PRIMARY KEY (id_section),
+  KEY id_course (id_course),
+  CONSTRAINT tbl_sections_ibfk_1 FOREIGN KEY (id_course) REFERENCES tbl_courses (id_course)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- ----------------------------
+-- Records of tbl_sections
+-- ----------------------------
+BEGIN;
+COMMIT;
 
+-- ----------------------------
+-- Stored Procedures for tbl_sections
+-- ----------------------------
 
+-- InsertSection Procedure
+DELIMITER //
+CREATE PROCEDURE InsertSection(
+    IN p_name_section VARCHAR(45),
+    IN p_id_course INT
+)
+BEGIN
+    INSERT INTO tbl_sections (name_section, id_course, status)
+    VALUES (p_name_section, p_id_course, TRUE);
+END //
+DELIMITER ;
 
+-- UpdateSectionById Procedure
+DELIMITER //
+CREATE PROCEDURE UpdateSectionById(
+    IN p_id_section INT,
+    IN p_name_section VARCHAR(45),
+    IN p_id_course INT,
+    IN p_status BOOLEAN
+)
+BEGIN
+    UPDATE tbl_sections
+    SET name_section = p_name_section,
+        id_course = p_id_course,
+        status = p_status
+    WHERE id_section = p_id_section;
+END //
+DELIMITER ;
 
+-- GetAllSections Procedure
+DELIMITER //
+CREATE PROCEDURE GetAllSections()
+BEGIN
+    SELECT id_section, name_section, id_course
+    FROM tbl_sections
+    WHERE status = TRUE;
+END //
+DELIMITER ;
 
+-- GetSectionById Procedure
+DELIMITER //
+CREATE PROCEDURE GetSectionById(IN p_id_section INT)
+BEGIN
+    SELECT id_section, name_section, id_course
+    FROM tbl_sections
+    WHERE id_section = p_id_section AND status = TRUE;
+END //
+DELIMITER ;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+-- DeleteSectionById (Soft Delete) Procedure
+DELIMITER //
+CREATE PROCEDURE DeleteSectionById(IN p_id_section INT)
+BEGIN
+    UPDATE tbl_sections
+    SET status = FALSE
+    WHERE id_section = p_id_section;
+END //
+DELIMITER ;
 
 
 -- ----------------------------
--- Create tbl_platforms table
+-- Table structure for tbl_users
 -- ----------------------------
-
-
-CREATE TABLE tbl_platforms (
-    id_platform INT NOT NULL AUTO_INCREMENT,
-    name_platform VARCHAR(100) NOT NULL,
-    status TINYINT(1) DEFAULT 1, -- Estado de la plataforma: 1 (activo), 0 (inactivo)
-    PRIMARY KEY (id_platform)
+DROP TABLE IF EXISTS `tbl_users`;
+CREATE TABLE `tbl_users` (
+  `id_user` INT NOT NULL AUTO_INCREMENT,
+  `name_user` VARCHAR(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `email_user` VARCHAR(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `password_user` VARCHAR(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `status` BOOLEAN DEFAULT TRUE,
+  PRIMARY KEY (`id_user`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- ----------------------------
+-- Records of tbl_users
+-- ----------------------------
+BEGIN;
+COMMIT;
 
-----------------------------------------------------------
--- Procedimientos almacenados para la tabla tbl_platfomrs----
-----------------------------------------------------------
--- Drop existing table if necessary
-DROP TABLE IF EXISTS tbl_platforms;
-
--- Create tbl_platforms table
-CREATE TABLE tbl_platforms (
-    id_platform INT NOT NULL AUTO_INCREMENT,
-    name_platform VARCHAR(100) NOT NULL,
-    status TINYINT(1) DEFAULT 1, -- Estado de la plataforma: 1 (activo), 0 (inactivo)
-    PRIMARY KEY (id_platform)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- Insert Platform
+-- ---------------------------------------
+-- InsertUser Procedure
 DELIMITER //
-CREATE PROCEDURE InsertPlatform(
-    IN p_name_platform VARCHAR(100)
+CREATE PROCEDURE InsertUser(
+    IN p_name_user VARCHAR(45),
+    IN p_email_user VARCHAR(45),
+    IN p_password_user VARCHAR(255)
 )
 BEGIN
-    INSERT INTO tbl_platforms (name_platform) VALUES (p_name_platform);
+    IF NOT EXISTS (SELECT 1 FROM tbl_users WHERE email_user = p_email_user) THEN
+        INSERT INTO tbl_users (name_user, email_user, password_user, status)
+        VALUES (p_name_user, p_email_user, p_password_user, TRUE);
+    ELSE
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Email already exists';
+    END IF;
 END //
 DELIMITER ;
 
--- Update Platform by ID
+-- UpdateUserByName Procedure
 DELIMITER //
-CREATE PROCEDURE UpdatePlatformById(
-    IN p_id_platform INT,
-    IN p_name_platform VARCHAR(100),
-    IN p_status TINYINT(1)
+CREATE PROCEDURE UpdateUserByName(
+    IN p_name_user VARCHAR(45),
+    IN p_email VARCHAR(45),
+    IN p_password VARCHAR(255),
+    IN p_status BOOLEAN
 )
 BEGIN
-    UPDATE tbl_platforms
-    SET name_platform = p_name_platform, status = p_status
-    WHERE id_platform = p_id_platform;
+    UPDATE tbl_users
+    SET email_user = p_email,
+        password_user = p_password,
+        status = p_status
+    WHERE name_user = p_name_user;
 END //
 DELIMITER ;
 
--- Get All Platforms
+-- GetAllUsers Procedure
 DELIMITER //
-CREATE PROCEDURE GetAllPlatforms()
+CREATE PROCEDURE GetAllUsers()
 BEGIN
-    SELECT * FROM tbl_platforms WHERE status = 1;
+    SELECT name_user, email_user
+    FROM tbl_users
+    WHERE status = TRUE;
 END //
 DELIMITER ;
 
--- Get Platform by ID
+-- GetUserByName Procedure
 DELIMITER //
-CREATE PROCEDURE GetPlatformById(IN p_id_platform INT)
+CREATE PROCEDURE GetUserByName(IN p_name VARCHAR(45))
 BEGIN
-    SELECT * FROM tbl_platforms WHERE id_platform = p_id_platform AND status = 1;
+    SELECT name_user, email_user
+    FROM tbl_users
+    WHERE name_user LIKE CONCAT('%', p_name, '%') AND status = TRUE;
 END //
 DELIMITER ;
 
--- Delete Logic (Soft Delete) by ID
+-- DeleteUserByName Procedure (Soft Delete)
 DELIMITER //
-CREATE PROCEDURE DeletePlatformById(IN p_id_platform INT)
+CREATE PROCEDURE DeleteUserByName(IN p_name_user VARCHAR(45))
 BEGIN
-    UPDATE tbl_platforms
-    SET status = 0
-    WHERE id_platform = p_id_platform;
+    UPDATE tbl_users
+    SET status = FALSE
+    WHERE name_user = p_name_user;
 END //
 DELIMITER ;
 
+-- Verificar procedimientos almacenados
+SHOW PROCEDURE STATUS WHERE Db = 'scriptpruebas';
