@@ -598,7 +598,7 @@ CREATE TABLE `tbl_reviews` (
   KEY `id_user` (`id_user`),
   KEY `course_id` (`course_id`),
   CONSTRAINT `reviews_ibfk_1` FOREIGN KEY (`id_user`) REFERENCES `tbl_users` (`id_user`),
-  CONSTRAINT `reviews_ibfk_2` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id_course`)
+  CONSTRAINT `reviews_ibfk_2` FOREIGN KEY (`course_id`) REFERENCES `tbl_courses` (`id_course`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- :::::::::::::::::::::::
